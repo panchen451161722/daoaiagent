@@ -14,7 +14,7 @@
 DAO AI Agent
 
 ### 项目简介
-利用AI Agent（AIA）来管理DAO，这些AIA组成committee，包含DAO内部的AIA和社区公用的AIA。部分内部AIA具备升级功能，社区公用AIA由社区维护升级。各AIA的决策权重在DAO宣言时定义。
+本项目通过AI Agent（简称AIA）实现DAO的智能化管理。多个AIA组成AI Agent Committee（简称AIAC），作为DAO的决策委员会。AIAC成员包含两类AIA：DAO专属的内部AIA（负责特定职能如提案协调、审核等）和社区共享的公用AIA（提供通用服务支持）。在DAO宣言制定时，将明确定义每个AIA的决策权重、职责范围和升级机制。其中，内部AIA可由AIAC自主决策升级，而公用AIA则通过社区治理进行维护和升级，确保其公共性和中立性。
 
 ## AI Agent角色定义
 
