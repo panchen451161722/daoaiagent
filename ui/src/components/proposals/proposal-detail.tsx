@@ -123,17 +123,15 @@ export function ProposalDetail({ proposal }: ProposalDetailProps) {
                     <h3 className="font-semibold">{event.status}</h3>
                     <p className="text-sm text-muted-foreground">{event.date}</p>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-primary"
-                    onClick={() => {
-                      // TODO: Implement modal or navigation to show AIA meeting details
-                      console.log("View AIA meeting:", event.aiaMeeting)
-                    }}
-                  >
-                    View AIA Meeting
-                  </Button>
+                  <Link href={`/proposals/${proposal.id}/meetings/${event.aiaMeeting.id}`}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-primary"
+                    >
+                      View AIA Meeting
+                    </Button>
+                  </Link>
                 </div>
                 <p className="text-sm text-muted-foreground">{event.summary}</p>
                 <div className="mt-2 text-sm">

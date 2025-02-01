@@ -1,78 +1,74 @@
 "use client"
 
 import { useState } from "react"
+import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Button } from "@/components/ui/button"
+import AIAConfigPanel from "./aia-config-panel"
+import ProcessConfig from "./process-config"
 
 export default function DeclarationForm() {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    logo: null,
+    logo: null as File | null,
     tokenSymbol: "",
     initialSupply: "",
-    objectives: "",
+    objective: "",
     values: "",
-    governanceStructure: "direct_democracy", // default value
   })
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    // TODO: Implement form submission
-    console.log(formData)
+    // TODO: Handle form submission
+    console.log("Form submitted:", formData)
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
-      {/* Basic Information Section */}
+      {/* Basic Information */}
       <div className="space-y-4">
-        <h2 className="text-xl font-semibold">Basic Information</h2>
-        <div className="grid gap-4">
-          <div>
-            <label htmlFor="name" className="block text-sm font-medium mb-1">
-              DAO Name
-            </label>
-            <Input
-              id="name"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              placeholder="Enter DAO name"
-              maxLength={60}
-              required
-            />
-          </div>
-          <div>
-            <label htmlFor="description" className="block text-sm font-medium mb-1">
-              Description
-            </label>
-            <Input
-              id="description"
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="Brief description of your DAO"
-              maxLength={60}
-              required
-            />
-          </div>
-          <div>
-            <label htmlFor="logo" className="block text-sm font-medium mb-1">
-              Logo
-            </label>
-            <Input
-              id="logo"
-              type="file"
-              accept="image/*"
-              onChange={(e) => setFormData({ ...formData, logo: e.target.files?.[0] || null })}
-            />
-          </div>
+        <h2 className="text-2xl font-bold">Basic Information</h2>
+        
+        <div>
+          <label htmlFor="name" className="block text-sm font-medium mb-1">
+            DAO Name
+          </label>
+          <Input
+            id="name"
+            value={formData.name}
+            onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+            maxLength={60}
+            required
+          />
         </div>
-      </div>
 
-      {/* Token Configuration */}
-      <div className="space-y-4">
-        <h2 className="text-xl font-semibold">Token Configuration</h2>
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label htmlFor="description" className="block text-sm font-medium mb-1">
+            Description
+          </label>
+          <Input
+            id="description"
+            value={formData.description}
+            onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+            maxLength={60}
+            required
+          />
+        </div>
+
+        <div>
+          <label htmlFor="logo" className="block text-sm font-medium mb-1">
+            Logo
+          </label>
+          <Input
+            id="logo"
+            type="file"
+            accept="image/*"
+            onChange={(e) => setFormData(prev => ({ ...prev, logo: e.target.files?.[0] || null }))}
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
           <div>
             <label htmlFor="tokenSymbol" className="block text-sm font-medium mb-1">
               Token Symbol
@@ -80,8 +76,7 @@ export default function DeclarationForm() {
             <Input
               id="tokenSymbol"
               value={formData.tokenSymbol}
-              onChange={(e) => setFormData({ ...formData, tokenSymbol: e.target.value })}
-              placeholder="e.g., DAO"
+              onChange={(e) => setFormData(prev => ({ ...prev, tokenSymbol: e.target.value }))}
               required
             />
           </div>
@@ -93,8 +88,8 @@ export default function DeclarationForm() {
               id="initialSupply"
               type="number"
               value={formData.initialSupply}
-              onChange={(e) => setFormData({ ...formData, initialSupply: e.target.value })}
-              placeholder="Enter initial token supply"
+              onChange={(e) => setFormData(prev => ({ ...prev, initialSupply: e.target.value }))}
+              min="0"
               required
             />
           </div>
@@ -103,55 +98,56 @@ export default function DeclarationForm() {
 
       {/* Declaration Content */}
       <div className="space-y-4">
-        <h2 className="text-xl font-semibold">Declaration Content</h2>
-        <div className="grid gap-4">
-          <div>
-            <label htmlFor="objectives" className="block text-sm font-medium mb-1">
-              Organization Objectives
-            </label>
-            <Textarea
-              id="objectives"
-              value={formData.objectives}
-              onChange={(e) => setFormData({ ...formData, objectives: e.target.value })}
-              placeholder="Describe your DAO's objectives"
-              required
-            />
-          </div>
-          <div>
-            <label htmlFor="values" className="block text-sm font-medium mb-1">
-              Values Statement
-            </label>
-            <Textarea
-              id="values"
-              value={formData.values}
-              onChange={(e) => setFormData({ ...formData, values: e.target.value })}
-              placeholder="Describe your DAO's core values"
-              required
-            />
-          </div>
-          <div>
-            <label htmlFor="governanceStructure" className="block text-sm font-medium mb-1">
-              Governance Structure
-            </label>
-            <select
-              id="governanceStructure"
-              value={formData.governanceStructure}
-              onChange={(e) => setFormData({ ...formData, governanceStructure: e.target.value })}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-              required
-            >
-              <option value="direct_democracy">Direct Democracy</option>
-              <option value="representative">Representative</option>
-              <option value="hybrid">Hybrid</option>
-            </select>
-          </div>
+        <h2 className="text-2xl font-bold">Declaration Content</h2>
+        
+        <div>
+          <label htmlFor="objective" className="block text-sm font-medium mb-1">
+            Organization Objective
+          </label>
+          <Textarea
+            id="objective"
+            value={formData.objective}
+            onChange={(e) => setFormData(prev => ({ ...prev, objective: e.target.value }))}
+            rows={4}
+            required
+          />
+        </div>
+
+        <div>
+          <label htmlFor="values" className="block text-sm font-medium mb-1">
+            Values Statement
+          </label>
+          <Textarea
+            id="values"
+            value={formData.values}
+            onChange={(e) => setFormData(prev => ({ ...prev, values: e.target.value }))}
+            rows={4}
+            required
+          />
         </div>
       </div>
 
-      {/* Submit Button */}
-      <Button type="submit" className="w-full sm:w-auto">
-        Create Declaration
-      </Button>
+      {/* AIA Configuration */}
+      <div className="space-y-4">
+        <h2 className="text-2xl font-bold">AIA Configuration</h2>
+        <AIAConfigPanel />
+      </div>
+
+      {/* Process Configuration */}
+      <div className="space-y-4">
+        <h2 className="text-2xl font-bold">Process Configuration</h2>
+        <ProcessConfig />
+      </div>
+
+      {/* Form Actions */}
+      <div className="flex justify-end gap-4">
+        <Button type="button" variant="outline">
+          Save Draft
+        </Button>
+        <Button type="submit">
+          Submit Declaration
+        </Button>
+      </div>
     </form>
   )
 }
