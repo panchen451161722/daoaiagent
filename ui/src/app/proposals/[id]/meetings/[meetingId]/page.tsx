@@ -75,12 +75,12 @@ interface PageProps {
   }
 }
 
-export default async function MeetingPage({ params }: PageProps) {
+export default function MeetingPage({ params }: PageProps) {
   return (
     <div className="container mx-auto py-10">
       {/* Back Link */}
       <div className="mb-8">
-        <Link href={`/proposals/${await Promise.resolve(params.id)}`}>
+        <Link href={`/proposals/${params.id}`}>
           <Button variant="ghost" className="pl-0">
             ← Back to Proposal
           </Button>

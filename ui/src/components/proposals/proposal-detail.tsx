@@ -10,15 +10,6 @@ interface ProposalDetailProps {
 export function ProposalDetail({ proposal }: ProposalDetailProps) {
   return (
     <div className="space-y-8">
-      {/* Back Button */}
-      <div>
-        <Link href="/proposals">
-          <Button variant="ghost" className="pl-0">
-            ← Back to Proposals
-          </Button>
-        </Link>
-      </div>
-
       {/* Header */}
       <div className="space-y-4">
         <div className="flex justify-between items-start">

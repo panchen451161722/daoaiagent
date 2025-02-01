@@ -3,7 +3,7 @@ import { ProposalDetail } from "@/components/proposals/proposal-detail"
 
 export const metadata: Metadata = {
   title: "Proposal Details",
-  description: "View proposal details and vote",
+  description: "View proposal details and status",
 }
 
 // Mock data for demonstration
@@ -73,7 +73,17 @@ const mockProposal = {
 export default function ProposalPage({ params }: { params: { id: string } }) {
   return (
     <div className="container mx-auto py-10">
-      <ProposalDetail proposal={mockProposal} />
+      <div className="space-y-8">
+        {/* Header */}
+        <div>
+          <h1 className="text-3xl font-bold">Proposal #{params.id}</h1>
+          <p className="text-muted-foreground mt-2">
+            View proposal details and current status
+          </p>
+        </div>
+
+        <ProposalDetail proposal={mockProposal} />
+      </div>
     </div>
   )
 }

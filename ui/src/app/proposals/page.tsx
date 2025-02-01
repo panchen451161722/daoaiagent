@@ -11,15 +11,6 @@ export const metadata: Metadata = {
 export default function ProposalsPage() {
   return (
     <div className="container mx-auto py-10">
-      {/* Back Link */}
-      <div className="mb-8">
-        <Link href="/">
-          <Button variant="ghost" className="pl-0">
-            ← Back to Home
-          </Button>
-        </Link>
-      </div>
-
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold">Proposals</h1>
