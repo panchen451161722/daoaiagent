@@ -1,6 +1,8 @@
 import { Metadata } from "next"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { cn } from "@/lib/utils"
 
 export const metadata: Metadata = {
   title: "AIA Meeting Details",
@@ -17,18 +19,24 @@ const mockMeeting = {
   participants: [
     {
       role: "Coordinator",
+      name: "Proposal Coordinator",
+      avatar: "/aia/coordinator.png",
       address: "0x1234...5678",
       vote: "Approve",
       comments: "The proposal aligns with our governance objectives"
     },
     {
       role: "Auditor",
+      name: "Risk Auditor",
+      avatar: "/aia/auditor.png",
       address: "0x2345...6789",
       vote: "Approve",
       comments: "Risk assessment shows acceptable levels"
     },
     {
       role: "Researcher",
+      name: "Technical Researcher",
+      avatar: "/aia/researcher.png",
       address: "0x3456...7890",
       vote: "Approve",
       comments: "Technical implementation appears feasible"
@@ -36,23 +44,35 @@ const mockMeeting = {
   ],
   discussion: [
     {
-      time: "10:00 AM",
-      speaker: "Coordinator",
+      speaker: {
+        role: "Coordinator",
+        name: "Proposal Coordinator",
+        avatar: "/aia/coordinator.png"
+      },
       content: "Meeting called to order. Today we will review proposal #123 regarding the new governance model."
     },
     {
-      time: "10:05 AM",
-      speaker: "Researcher",
+      speaker: {
+        role: "Researcher",
+        name: "Technical Researcher",
+        avatar: "/aia/researcher.png"
+      },
       content: "Based on my analysis, the proposed changes are technically sound and can be implemented within the suggested timeframe."
     },
     {
-      time: "10:15 AM",
-      speaker: "Auditor",
+      speaker: {
+        role: "Auditor",
+        name: "Risk Auditor",
+        avatar: "/aia/auditor.png"
+      },
       content: "I've reviewed the potential risks. The main concerns are..."
     },
     {
-      time: "10:30 AM",
-      speaker: "Coordinator",
+      speaker: {
+        role: "Coordinator",
+        name: "Proposal Coordinator",
+        avatar: "/aia/coordinator.png"
+      },
       content: "Let's proceed with the voting phase. Please submit your votes with comments."
     }
   ],
@@ -113,15 +133,22 @@ export default function MeetingPage({ params }: PageProps) {
             {mockMeeting.participants.map((participant, index) => (
               <div key={index} className="border rounded-lg p-4">
                 <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="font-semibold">{participant.role}</h3>
-                    <p className="text-sm text-muted-foreground">{participant.address}</p>
+                  <div className="flex items-center gap-3">
+                    <Avatar>
+                      <AvatarImage src={participant.avatar} alt={participant.role} />
+                      <AvatarFallback>{participant.role[0]}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <h3 className="font-semibold">{participant.name}</h3>
+                      <p className="text-sm text-muted-foreground">{participant.address}</p>
+                    </div>
                   </div>
-                  <span className={`px-3 py-1 rounded-full text-sm ${
+                  <span className={cn(
+                    "px-3 py-1 rounded-full text-sm",
                     participant.vote === "Approve" 
                       ? "bg-green-100 text-green-700" 
                       : "bg-red-100 text-red-700"
-                  }`}>
+                  )}>
                     {participant.vote}
                   </span>
                 </div>
@@ -134,15 +161,18 @@ export default function MeetingPage({ params }: PageProps) {
         {/* Discussion */}
         <div>
           <h2 className="text-xl font-semibold mb-4">Meeting Discussion</h2>
-          <div className="space-y-4">
+          <div className="space-y-6">
             {mockMeeting.discussion.map((item, index) => (
               <div key={index} className="flex gap-4">
-                <div className="w-24 flex-shrink-0">
-                  <p className="text-sm text-muted-foreground">{item.time}</p>
-                </div>
-                <div>
-                  <p className="font-semibold">{item.speaker}</p>
-                  <p className="text-sm text-muted-foreground">{item.content}</p>
+                <Avatar>
+                  <AvatarImage src={item.speaker.avatar} alt={item.speaker.role} />
+                  <AvatarFallback>{item.speaker.role[0]}</AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <div className="bg-secondary/50 rounded-lg p-4">
+                    <p className="font-semibold mb-1">{item.speaker.name}</p>
+                    <p className="text-sm">{item.content}</p>
+                  </div>
                 </div>
               </div>
             ))}
