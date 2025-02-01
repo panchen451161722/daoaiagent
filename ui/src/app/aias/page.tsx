@@ -56,6 +56,9 @@ export default function AIAsPage() {
           <h1 className="text-3xl font-bold">AIA List</h1>
           <p className="text-muted-foreground">View all available AIAs</p>
         </div>
+        <Link href="/aias/create">
+          <Button>Create AIA</Button>
+        </Link>
       </div>
 
       <div className="grid gap-6">
