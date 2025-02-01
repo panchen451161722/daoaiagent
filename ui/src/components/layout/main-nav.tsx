@@ -15,56 +15,46 @@ import {
 
 const navItems = [
   {
-    title: "DAOs",
-    href: "/daos",
-    pattern: /^\/daos(?:\/|$)/,
-    description: "View and manage DAOs",
+    title: "DAO",
+    pattern: /^\/(?:daos|proposals|declaration)(?:\/|$)/,
+    description: "Manage DAOs and proposals",
     children: [
       {
         title: "All DAOs",
         href: "/daos",
-        description: "View all existing DAOs"
+        description: "View and manage all existing DAOs"
+      },
+      {
+        title: "All Proposals",
+        href: "/proposals",
+        description: "View and manage all proposals"
       },
       {
         title: "Create DAO",
         href: "/declaration",
-        description: "Create a new DAO"
+        description: "Create a new DAO with custom configuration"
       }
     ]
   },
   {
-    title: "Proposals",
-    href: "/proposals",
-    pattern: /^\/proposals(?:\/|$)/,
-    description: "View and manage proposals",
+    title: "AI Agent",
+    pattern: /^\/(?:aias|meetings)(?:\/|$)/,
+    description: "Manage AI Agents and their activities",
     children: [
       {
-        title: "All Proposals",
-        href: "/proposals",
-        description: "View all active proposals"
+        title: "All AI Agents",
+        href: "/aias",
+        description: "View and manage all AI Agents"
+      },
+      {
+        title: "Create AI Agent",
+        href: "/aias/create",
+        description: "Create a new AI Agent with custom capabilities"
       },
       {
         title: "Recent Meetings",
         href: "/meetings",
-        description: "View recent proposal meetings"
-      }
-    ]
-  },
-  {
-    title: "AIAs",
-    href: "/aias",
-    pattern: /^\/aias(?:\/|$)/,
-    description: "View all available AIAs",
-    children: [
-      {
-        title: "All AIAs",
-        href: "/aias",
-        description: "View all AI Agents"
-      },
-      {
-        title: "Create AIA",
-        href: "/aias/create",
-        description: "Create a new AI Agent"
+        description: "View recent AI Agent meetings and discussions"
       }
     ]
   }
@@ -84,7 +74,7 @@ export function MainNav() {
       <NavigationMenu>
         <NavigationMenuList>
           {navItems.map((item) => (
-            <NavigationMenuItem key={item.href}>
+            <NavigationMenuItem key={item.title}>
               <NavigationMenuTrigger
                 className={cn(
                   item.pattern.test(pathname) && "text-foreground"
@@ -95,19 +85,14 @@ export function MainNav() {
               <NavigationMenuContent>
                 <ul className="grid gap-3 p-4 w-[400px]">
                   <li className="row-span-3">
-                    <NavigationMenuLink asChild>
-                      <Link
-                        className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md"
-                        href={item.href}
-                      >
-                        <div className="mb-2 mt-4 text-lg font-medium">
-                          {item.title}
-                        </div>
-                        <p className="text-sm leading-tight text-muted-foreground">
-                          {item.description}
-                        </p>
-                      </Link>
-                    </NavigationMenuLink>
+                    <div className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none">
+                      <div className="mb-2 mt-4 text-lg font-medium">
+                        {item.title}
+                      </div>
+                      <p className="text-sm leading-tight text-muted-foreground">
+                        {item.description}
+                      </p>
+                    </div>
                   </li>
                   {item.children.map((child) => (
                     <li key={child.href}>
