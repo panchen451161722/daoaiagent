@@ -1,5 +1,5 @@
 import { Metadata } from "next"
-import { Button } from "@/components/ui/button"
+import { ProposalDetail } from "@/components/proposals/proposal-detail"
 
 export const metadata: Metadata = {
   title: "Proposal Details",
@@ -33,106 +33,47 @@ const mockProposal = {
     against: 30,
     quorum: 200,
   },
+  history: [
+    {
+      id: 1,
+      date: "2024-01-30",
+      status: "Created",
+      summary: "Proposal submitted for review",
+      aiaMeeting: {
+        id: "M001",
+        participants: ["Coordinator", "Auditor", "Researcher"],
+        summary: "Initial review completed, proceeding to voting phase"
+      }
+    },
+    {
+      id: 2,
+      date: "2024-01-31",
+      status: "Under Review",
+      summary: "AIA Committee meeting conducted",
+      aiaMeeting: {
+        id: "M002",
+        participants: ["Coordinator", "Auditor", "Researcher", "Financial Controller"],
+        summary: "Detailed analysis of proposal impact and feasibility"
+      }
+    },
+    {
+      id: 3,
+      date: "2024-02-01",
+      status: "Active",
+      summary: "Proposal approved for community voting",
+      aiaMeeting: {
+        id: "M003",
+        participants: ["All Committee Members"],
+        summary: "Final approval granted with conditions"
+      }
+    }
+  ]
 }
 
 export default function ProposalPage({ params }: { params: { id: string } }) {
   return (
     <div className="container mx-auto py-10">
-      <div className="space-y-8">
-        {/* Header */}
-        <div className="space-y-4">
-          <div className="flex justify-between items-start">
-            <div>
-              <h1 className="text-3xl font-bold">{mockProposal.title}</h1>
-              <div className="flex gap-2 text-sm text-muted-foreground mt-2">
-                <span>{mockProposal.type}</span>
-                <span>•</span>
-                <span>Created {mockProposal.created}</span>
-                <span>•</span>
-                <span>By {mockProposal.creator}</span>
-              </div>
-            </div>
-            <span
-              className={`px-3 py-1 rounded-full text-sm ${
-                mockProposal.status === "Active"
-                  ? "bg-green-100 text-green-700"
-                  : "bg-yellow-100 text-yellow-700"
-              }`}
-            >
-              {mockProposal.status}
-            </span>
-          </div>
-        </div>
-
-        {/* Voting Status */}
-        <div className="bg-secondary/50 rounded-lg p-6">
-          <h2 className="text-xl font-semibold mb-4">Voting Status</h2>
-          <div className="grid grid-cols-3 gap-4 text-center">
-            <div>
-              <div className="text-2xl font-bold text-green-600">
-                {mockProposal.votes.for}
-              </div>
-              <div className="text-sm text-muted-foreground">For</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-red-600">
-                {mockProposal.votes.against}
-              </div>
-              <div className="text-sm text-muted-foreground">Against</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold">
-                {mockProposal.votes.quorum}
-              </div>
-              <div className="text-sm text-muted-foreground">Quorum</div>
-            </div>
-          </div>
-          <div className="flex gap-4 justify-center mt-6">
-            <Button variant="default" className="w-32">Vote For</Button>
-            <Button variant="outline" className="w-32">Vote Against</Button>
-          </div>
-        </div>
-
-        {/* Content */}
-        <div className="space-y-8">
-          <section>
-            <h2 className="text-xl font-semibold mb-2">Summary</h2>
-            <p className="text-muted-foreground">{mockProposal.summary}</p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-semibold mb-2">Details</h2>
-            <div className="prose max-w-none">
-              {mockProposal.details.split("\n").map((paragraph, index) => (
-                <p key={index} className="text-muted-foreground">
-                  {paragraph}
-                </p>
-              ))}
-            </div>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-semibold mb-2">Funding Request</h2>
-            <div className="space-y-2">
-              <p className="text-muted-foreground">
-                Token Amount: {mockProposal.tokenRequest} tokens
-              </p>
-              <div className="prose max-w-none">
-                {mockProposal.fundingPlan.split("\n").map((paragraph, index) => (
-                  <p key={index} className="text-muted-foreground">
-                    {paragraph}
-                  </p>
-                ))}
-              </div>
-            </div>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-semibold mb-2">Expected Outcome</h2>
-            <p className="text-muted-foreground">{mockProposal.expectedOutcome}</p>
-          </section>
-        </div>
-      </div>
+      <ProposalDetail proposal={mockProposal} />
     </div>
   )
 }

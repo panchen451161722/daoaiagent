@@ -1,0 +1,5 @@
+- using yarn as my package manager.
+- avoid unnecessary changes to existing code.
+- for each changes, I don't need you to explain the changes.
+- for each changes, summarize the changes as commit message.
+- Unless I ask you to do so, must write code and comment and UI in English, but answer my questions in the language that I use.
