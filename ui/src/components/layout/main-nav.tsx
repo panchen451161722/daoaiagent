@@ -16,7 +16,7 @@ import {
 const navItems = [
   {
     title: "DAO",
-    pattern: /^\/(?:daos|proposals|declaration)(?:\/|$)/,
+    pattern: /^\/(?:daos|proposals|manifesto)(?:\/|$)/,
     description: "Manage DAOs and proposals",
     children: [
       {
@@ -31,7 +31,7 @@ const navItems = [
       },
       {
         title: "Create DAO",
-        href: "/declaration",
+        href: "/manifesto",
         description: "Create a new DAO with custom configuration"
       }
     ]

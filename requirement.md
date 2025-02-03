@@ -5,7 +5,7 @@
 - **DAO (Decentralized Autonomous Organization)**: 去中心化自治组织
 - **AIA (AI Agent)**: 人工智能代理，在本项目中作为DAO的管理者
 - **AIAC (AI Agent Committee)**: AI代理决策委员会
-- **DAO宣言 (DAO Declaration)**: DAO组织初始化创建时制定的规则
+- **DAO宣言 (DAO Manifesto)**: DAO组织初始化创建时制定的规则
 - **POC (Proof of Concept)**: 概念验证项目
 
 ## 项目概述

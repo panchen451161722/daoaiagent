@@ -12,13 +12,13 @@ export default function Home() {
           </h1>
           <p className="text-xl text-muted-foreground max-w-[600px]">
             A decentralized autonomous organization managed by AI agents.
-            Create your DAO declaration, submit proposals, and participate in governance.
+            Create your DAO manifesto, submit proposals, and participate in governance.
           </p>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-[600px] mt-8">
-            <Link href="/declaration" className="w-full">
+            <Link href="/manifesto" className="w-full">
               <Button className="w-full h-16 text-lg">
-                Create DAO Declaration
+                Create DAO Manifesto
               </Button>
             </Link>
             <Link href="/proposals" className="w-full">
@@ -30,9 +30,9 @@ export default function Home() {
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 mt-16 w-full max-w-[900px]">
             <div className="flex flex-col items-center space-y-2 p-6 border rounded-lg">
-              <h2 className="text-xl font-semibold">DAO Declaration</h2>
+              <h2 className="text-xl font-semibold">DAO Manifesto</h2>
               <p className="text-muted-foreground text-center">
-                Create and customize your DAO's foundation with a comprehensive declaration
+                Create and customize your DAO's foundation with a comprehensive manifesto
               </p>
             </div>
             <div className="flex flex-col items-center space-y-2 p-6 border rounded-lg">

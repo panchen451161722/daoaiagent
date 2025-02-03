@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea"
 import AIAConfigPanel from "./aia-config-panel"
 import ProcessConfig from "./process-config"
 
-export default function DeclarationForm() {
+export default function ManifestoForm() {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -96,9 +96,9 @@ export default function DeclarationForm() {
         </div>
       </div>
 
-      {/* Declaration Content */}
+      {/* Manifesto Content */}
       <div className="space-y-4">
-        <h2 className="text-2xl font-bold">Declaration Content</h2>
+        <h2 className="text-2xl font-bold">Manifesto Content</h2>
         
         <div>
           <label htmlFor="objective" className="block text-sm font-medium mb-1">
@@ -145,7 +145,7 @@ export default function DeclarationForm() {
           Save Draft
         </Button>
         <Button type="submit">
-          Submit Declaration
+          Submit Manifesto
         </Button>
       </div>
     </form>

@@ -43,7 +43,7 @@ export default function DAOsPage() {
           <h1 className="text-3xl font-bold">DAOs</h1>
           <p className="text-muted-foreground">View and manage DAOs</p>
         </div>
-        <Link href="/declaration">
+        <Link href="/manifesto">
           <Button>Create DAO</Button>
         </Link>
       </div>
