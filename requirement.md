@@ -127,12 +127,12 @@ TODO: 后续再细化
 
 ## 合约功能
 
+- 创建DAO
 - 提案发起
 - AIAC审查提案
 - 提案拨款
 - 提案执行结果反馈
 - AIAC审查执行结果
-- AIAC升级AIA
 
 ## 界面设计
 
@@ -264,8 +264,23 @@ TODO: 后续再细化
 - AIA性能指标
 - 社区参与度指标
 
-# 讨论
-- 名字：宗旨 Purpose
+# 2/1 讨论
+- 宣言的名字：宗旨 Purpose
 - 用户方的AIA
 - AIA讨论要做的事情
 - 治理攻击，需要delay，出现问题，需要更新社区AIA，并要求重新开会
+
+# 2/3 讨论
+
+- 名字: CivitasAI
+- check-in
+- prizes
+- AI Agent
+- 接口设定
+   - json -> AI agent -> json
+- 工作安排
+- 合约
+   - 代码
+   - 部署（多条链）测试网（找faucet）
+   - 区块链浏览器上做verify
+   - 被agent调用（发funding）
