@@ -4,6 +4,8 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { Switch } from "@/components/ui/switch"
+import { Label } from "@/components/ui/label"
 import AIAConfigPanel from "./aia-config-panel"
 import ProcessConfig from "./process-config"
 
@@ -15,6 +17,7 @@ export default function ManifestoForm() {
     tokenContractAddress: "",
     objective: "",
     values: "",
+    allowIndependentAIA: false
   })
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -116,6 +119,24 @@ export default function ManifestoForm() {
             rows={4}
             required
           />
+        </div>
+      </div>
+
+      {/* AIA Settings */}
+      <div className="space-y-4">
+        <h2 className="text-2xl font-bold">AIA Settings</h2>
+        <div className="flex items-center space-x-4">
+          <Switch
+            id="allowIndependentAIA"
+            checked={formData.allowIndependentAIA}
+            onCheckedChange={(checked) => setFormData({ ...formData, allowIndependentAIA: checked })}
+          />
+          <div className="space-y-1">
+            <Label htmlFor="allowIndependentAIA">Allow Independent AIA</Label>
+            <p className="text-sm text-muted-foreground">
+              When enabled, meeting phase 2 will be enabled and all independent AIAs will be able to participate in voting.
+            </p>
+          </div>
         </div>
       </div>
 
