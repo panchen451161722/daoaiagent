@@ -3,156 +3,172 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Checkbox } from "@/components/ui/checkbox"
+import { X } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 interface AIA {
   id: string
   role: string
-  type: "internal" | "public"
+  emoji: string
   permissions: string[]
   weight: number
+  type: "internal" | "public"
 }
 
-const defaultInternalAIAs: AIA[] = [
-  {
-    id: "1",
-    role: "Proposal Coordinator",
-    type: "internal",
-    permissions: ["create_proposal", "review_proposal"],
-    weight: 1
-  },
-  {
-    id: "2",
-    role: "Auditor",
-    type: "internal",
-    permissions: ["veto_proposal", "review_risk"],
-    weight: 2
-  },
-  {
-    id: "3",
-    role: "Proposal Researcher",
-    type: "internal",
-    permissions: ["analyze_proposal", "assess_impact"],
-    weight: 1
-  }
+const availablePermissions = [
+  "propose",
+  "vote",
+  "execute",
+  "manage_members",
+  "manage_treasury",
+  "manage_settings"
 ]
 
-const defaultPublicAIAs: AIA[] = [
-  {
-    id: "4",
-    role: "Technical Advisor",
-    type: "public",
-    permissions: ["technical_review", "feasibility_assessment"],
-    weight: 1
-  },
-  {
-    id: "5",
-    role: "Financial Controller",
-    type: "public",
-    permissions: ["budget_review", "fund_monitoring"],
-    weight: 1
-  }
+const availableAIAs: AIA[] = [
+  { id: "gpt4", role: "GPT-4", emoji: "🤖", permissions: ["propose", "vote"], weight: 1, type: "internal" },
+  { id: "claude", role: "Claude", emoji: "🧠", permissions: ["propose", "vote"], weight: 1, type: "internal" },
+  { id: "llama", role: "Llama", emoji: "🦙", permissions: ["propose"], weight: 1, type: "public" },
+  { id: "palm", role: "PaLM", emoji: "🌴", permissions: ["propose"], weight: 1, type: "public" },
+  { id: "gemini", role: "Gemini", emoji: "👾", permissions: ["propose", "vote"], weight: 1, type: "internal" },
+  { id: "mistral", role: "Mistral", emoji: "🌪️", permissions: ["propose"], weight: 1, type: "public" }
 ]
 
 export default function AIAConfigPanel() {
-  const [internalAIAs, setInternalAIAs] = useState<AIA[]>(defaultInternalAIAs)
-  const [publicAIAs, setPublicAIAs] = useState<AIA[]>(defaultPublicAIAs)
-  const [upgradeThreshold, setUpgradeThreshold] = useState(75)
+  const [selectedAIAs, setSelectedAIAs] = useState<AIA[]>([])
 
-  const handleWeightChange = (id: string, weight: number, type: "internal" | "public") => {
-    if (type === "internal") {
-      setInternalAIAs(prev => prev.map(aia => 
-        aia.id === id ? { ...aia, weight } : aia
-      ))
-    } else {
-      setPublicAIAs(prev => prev.map(aia => 
-        aia.id === id ? { ...aia, weight } : aia
-      ))
+  const handleAddAIA = (aia: AIA) => {
+    if (!selectedAIAs.find(a => a.id === aia.id)) {
+      setSelectedAIAs([...selectedAIAs, { ...aia }])
     }
+  }
+
+  const handleRemoveAIA = (id: string) => {
+    setSelectedAIAs(selectedAIAs.filter(aia => aia.id !== id))
+  }
+
+  const handlePermissionToggle = (aiaId: string, permission: string) => {
+    setSelectedAIAs(prev => prev.map(aia => {
+      if (aia.id === aiaId) {
+        const newPermissions = aia.permissions.includes(permission)
+          ? aia.permissions.filter(p => p !== permission)
+          : [...aia.permissions, permission]
+        return { ...aia, permissions: newPermissions }
+      }
+      return aia
+    }))
+  }
+
+  const handleWeightChange = (id: string, weight: number) => {
+    setSelectedAIAs(prev => prev.map(aia => 
+      aia.id === id ? { ...aia, weight } : aia
+    ))
+  }
+
+  const toggleAIAType = (id: string) => {
+    setSelectedAIAs(prev => prev.map(aia => 
+      aia.id === id ? { ...aia, type: aia.type === "internal" ? "public" : "internal" } : aia
+    ))
   }
 
   return (
     <div className="space-y-6">
-      {/* Internal AIAs */}
       <div>
-        <h3 className="text-lg font-semibold mb-4">Internal AIA Configuration</h3>
-        <div className="space-y-4">
-          {internalAIAs.map((aia) => (
-            <div key={aia.id} className="border rounded-lg p-4">
-              <div className="flex justify-between items-start mb-2">
-                <div>
-                  <h4 className="font-semibold">{aia.role}</h4>
-                  <div className="text-sm text-muted-foreground mt-1">
-                    Permissions: {aia.permissions.join(", ")}
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">Weight:</span>
-                  <Input
-                    type="number"
-                    value={aia.weight}
-                    onChange={(e) => handleWeightChange(aia.id, Number(e.target.value), "internal")}
-                    className="w-20"
-                    min={0}
-                    max={10}
-                  />
-                </div>
-              </div>
-            </div>
-          ))}
+        <h3 className="text-lg font-semibold mb-4">Add AIA</h3>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          {availableAIAs.map((aia) => {
+            const isSelected = selectedAIAs.some(a => a.id === aia.id)
+            return (
+              <Button
+                key={aia.id}
+                variant="outline"
+                className={cn(
+                  "h-auto py-4 px-4 flex flex-col items-center gap-2 relative",
+                  !isSelected && "opacity-50 hover:opacity-75",
+                  isSelected && "border-primary"
+                )}
+                onClick={() => isSelected ? handleRemoveAIA(aia.id) : handleAddAIA(aia)}
+              >
+                <span className="text-2xl">{aia.emoji}</span>
+                <span>{aia.role}</span>
+                <span className={cn(
+                  "absolute top-2 right-2 text-xs px-2 py-1 rounded-full",
+                  "bg-opacity-80 text-white",
+                  !isSelected && "bg-gray-400",
+                  isSelected && (aia.type === "internal" ? "bg-blue-500" : "bg-green-500")
+                )}>
+                  {aia.type}
+                </span>
+              </Button>
+            )
+          })}
         </div>
       </div>
 
-      {/* Public AIAs */}
       <div>
-        <h3 className="text-lg font-semibold mb-4">Public AIA Configuration</h3>
+        <h3 className="text-lg font-semibold mb-4">Selected AIAs</h3>
         <div className="space-y-4">
-          {publicAIAs.map((aia) => (
+          {selectedAIAs.map((aia) => (
             <div key={aia.id} className="border rounded-lg p-4">
-              <div className="flex justify-between items-start mb-2">
-                <div>
-                  <h4 className="font-semibold">{aia.role}</h4>
-                  <div className="text-sm text-muted-foreground mt-1">
-                    Permissions: {aia.permissions.join(", ")}
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">{aia.emoji}</span>
+                  <div>
+                    <h4 className="font-semibold">{aia.role}</h4>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => toggleAIAType(aia.id)}
+                      className={cn(
+                        "mt-1 text-xs h-6 px-2",
+                        aia.type === "internal" ? "text-blue-500" : "text-green-500"
+                      )}
+                    >
+                      {aia.type}
+                    </Button>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">Weight:</span>
-                  <Input
-                    type="number"
-                    value={aia.weight}
-                    onChange={(e) => handleWeightChange(aia.id, Number(e.target.value), "public")}
-                    className="w-20"
-                    min={0}
-                    max={10}
-                  />
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">Weight:</span>
+                    <Input
+                      type="number"
+                      value={aia.weight}
+                      onChange={(e) => handleWeightChange(aia.id, Number(e.target.value))}
+                      className="w-20"
+                      min={0}
+                      max={10}
+                    />
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleRemoveAIA(aia.id)}
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
                 </div>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {availablePermissions.map((permission) => (
+                  <div key={permission} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`${aia.id}-${permission}`}
+                      checked={aia.permissions.includes(permission)}
+                      onCheckedChange={() => handlePermissionToggle(aia.id, permission)}
+                    />
+                    <label
+                      htmlFor={`${aia.id}-${permission}`}
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      {permission.split("_").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" ")}
+                    </label>
+                  </div>
+                ))}
               </div>
             </div>
           ))}
-        </div>
-      </div>
-
-      {/* Upgrade Configuration */}
-      <div>
-        <h3 className="text-lg font-semibold mb-4">Upgrade Configuration</h3>
-        <div className="border rounded-lg p-4">
-          <div className="flex items-center gap-4">
-            <span>Upgrade Approval Threshold:</span>
-            <div className="flex items-center gap-2">
-              <Input
-                type="number"
-                value={upgradeThreshold}
-                onChange={(e) => setUpgradeThreshold(Number(e.target.value))}
-                className="w-20"
-                min={0}
-                max={100}
-              />
-              <span>%</span>
-            </div>
-          </div>
-          <p className="text-sm text-muted-foreground mt-2">
-            Percentage of weighted votes required to approve an AIA upgrade
-          </p>
         </div>
       </div>
     </div>
