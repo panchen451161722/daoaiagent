@@ -47,9 +47,9 @@ class Proposal:
             "additional_context": self.additional_context
         }
 
+
 # State Management
 class AgentState(TypedDict):
-    messages: Annotated[Sequence[BaseMessage], operator.add]
     proposal: Dict[str, Any]
     current_round: int
     discussion_history: List[str]
@@ -57,6 +57,8 @@ class AgentState(TypedDict):
     next_agent: str
     validation_results: Dict[str, Dict[str, Any]]
     max_rounds: int
+    final_decision: FinalDecision
+
 
 # Agent Definitions
 class BaseAgent:
@@ -87,7 +89,6 @@ Guidelines:
 3. If you have nothing new to add, respond with: PASS
 4. Focus only on your role's perspective""",
                 ),
-                MessagesPlaceholder(variable_name="messages"),
                 (
                     "human",
                     """Review the proposal and previous discussions:
@@ -106,9 +107,8 @@ Provide your brief analysis or respond with PASS if no new concerns.""",
     def analyze(self, state: AgentState) -> AgentState:
         prompt = self.get_prompt(state["current_round"], state["max_rounds"])
         messages = prompt.format_messages(
-            messages=state["messages"],
             proposal=json.dumps(state["proposal"], indent=2),
-            discussion_history="\n".join(state["discussion_history"])
+            discussion_history="\n".join(state["discussion_history"]),
         )
         response = self.llm.invoke(messages)
 
@@ -120,8 +120,6 @@ Provide your brief analysis or respond with PASS if no new concerns.""",
             state["discussion_history"].append(
                 f"Round {state['current_round']} - {self.role}: {response.content}"
             )
-
-        state["messages"].append(AIMessage(content=response.content))
 
         # Determine next agent
         agents = ["coordinator", "financial", "technical", "auditor"]
@@ -304,7 +302,7 @@ def create_aiac_graph(max_rounds: int = 3):
     workflow.add_node("technical_vote", technical.vote)
     workflow.add_node("auditor_vote", auditor.vote)
     # 4. final decision
-    workflow.add_node("final_decision", auditor.make_final_decision)
+    workflow.add_node("decision", auditor.make_final_decision)
 
     # Set entry point
     workflow.set_entry_point("precheck")
@@ -343,10 +341,10 @@ def create_aiac_graph(max_rounds: int = 3):
     workflow.add_edge("coordinator_vote", "financial_vote")
     workflow.add_edge("financial_vote", "technical_vote")
     workflow.add_edge("technical_vote", "auditor_vote")
-    workflow.add_edge("auditor_vote", "final_decision")
+    workflow.add_edge("auditor_vote", "decision")
 
     # Final decision to end
-    workflow.add_edge("final_decision", END)
+    workflow.add_edge("decision", END)
 
     return workflow.compile()
 
@@ -365,7 +363,6 @@ class AIAgentCommitee:
 
     def review_proposal(self, proposal: Proposal) -> Dict[str, Any]:
         initial_state = AgentState(
-            messages=[],
             proposal=proposal.to_dict(),
             current_round=1,
             discussion_history=[],
@@ -373,6 +370,9 @@ class AIAgentCommitee:
             next_agent="coordinator",
             validation_results={},
             max_rounds=self.max_rounds,
+            final_decision=FinalDecision(
+                decision="REJECT", justification="internal error"
+            ),
         )
 
         last_state = None
@@ -409,34 +409,34 @@ if __name__ == "__main__":
     committee = AIAgentCommitee()
     committee.save_graph_image()
     test_proposal = Proposal(
-        title="Implementation of Production-Ready LLM Monitoring System",
-        description="Develop and deploy a comprehensive monitoring system for our LLM applications to track performance metrics, detect anomalies, and ensure responsible AI practices.",
-        amount=175000.00,
+        title="Pilot Implementation of Basic LLM Usage Analytics Dashboard",
+        description="Develop a minimal viable product (MVP) dashboard to track essential LLM usage metrics and costs, serving as a foundation for future monitoring capabilities.",
+        amount=45000.00,
         additional_context={
-            "timeline": "6 months",
-            "team_size": 3,
+            "timeline": "2 months",
+            "team_size": 1,
             "expected_outcomes": [
-                "Real-time monitoring dashboard for LLM performance metrics",
-                "Automated anomaly detection system with 95% accuracy",
-                "Cost optimization resulting in 20% reduction in API usage",
-                "Compliance reporting system for responsible AI practices",
+                "Basic dashboard showing daily/weekly LLM API usage patterns",
+                "Simple cost tracking and reporting functionality",
+                "Basic error rate monitoring",
+                "Usage patterns by endpoint/application",
             ],
             "risk_mitigation": {
-                "technical": "Using proven monitoring frameworks and gradual rollout",
-                "financial": "Monthly budget reviews and clear success metrics",
-                "compliance": "Regular audits and documentation of all processes",
+                "technical": "Using established open-source monitoring libraries and cloud-native solutions",
+                "financial": "Fixed-price engagement with clear deliverables",
+                "compliance": "Built-in data retention policies and access controls",
             },
             "success_metrics": {
-                "performance": "Response time under 100ms for 99% of requests",
-                "reliability": "99.9% uptime for monitoring systems",
-                "cost_efficiency": "20% reduction in overall API costs",
-                "adoption": "100% integration with existing LLM applications",
+                "performance": "Dashboard refresh rate under 5 minutes",
+                "reliability": "99% dashboard uptime",
+                "cost_efficiency": "Implementation cost recovered through 10% API cost reduction in first 6 months",
+                "adoption": "Dashboard actively used by at least 3 teams",
             },
             "phased_implementation": [
-                "Month 1-2: System Design and Core Infrastructure",
-                "Month 3-4: Dashboard Development and Testing",
-                "Month 5: Integration and User Acceptance Testing",
-                "Month 6: Production Deployment and Documentation",
+                "Week 1-2: Requirements gathering and design",
+                "Week 3-4: Core dashboard development",
+                "Week 5-6: Testing and team training",
+                "Week 7-8: Deployment and documentation",
             ],
         },
     )
