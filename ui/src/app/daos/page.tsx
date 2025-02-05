@@ -7,31 +7,55 @@ export const metadata: Metadata = {
   description: "View and manage DAOs",
 }
 
+interface Treasury {
+  amount: string // Raw amount in smallest unit (e.g., "1500000000" for 1.5M)
+  symbol: string
+}
+
+function formatNumber(value: string): string {
+  const num = Number(value)
+  if (num >= 1_000_000) {
+    return (num / 1_000_000).toFixed(1) + 'M'
+  } else if (num >= 1_000) {
+    return (num / 1_000).toFixed(1) + 'K'
+  }
+  return num.toString()
+}
+
 // Mock data for demonstration
 const mockDAOs = [
   {
     id: "1",
     name: "DeFi DAO",
     description: "Decentralized Finance Governance",
-    members: 1200,
+    autonomousMeetings: 28,
     proposals: 45,
-    treasury: "1.5M USDC"
+    treasury: {
+      amount: "1500000", // 1.5M
+      symbol: "USDC"
+    } as Treasury
   },
   {
     id: "2",
     name: "NFT Creators",
     description: "Digital Art and NFT Governance",
-    members: 800,
+    autonomousMeetings: 42,
     proposals: 32,
-    treasury: "2.3M USDC"
+    treasury: {
+      amount: "2300000", // 2.3M
+      symbol: "USDC"
+    } as Treasury
   },
   {
     id: "3",
     name: "Gaming Guild",
     description: "Gaming and Metaverse Governance",
-    members: 1500,
+    autonomousMeetings: 15,
     proposals: 28,
-    treasury: "900K USDC"
+    treasury: {
+      amount: "900000", // 900K
+      symbol: "USDC"
+    } as Treasury
   }
 ]
 
@@ -66,8 +90,8 @@ export default function DAOsPage() {
             </div>
             <div className="grid grid-cols-3 gap-4 mt-6">
               <div>
-                <p className="text-sm text-muted-foreground">Members</p>
-                <p className="text-2xl font-bold">{dao.members}</p>
+                <p className="text-sm text-muted-foreground">Autonomous Meetings</p>
+                <p className="text-2xl font-bold">{dao.autonomousMeetings}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Proposals</p>
@@ -75,7 +99,10 @@ export default function DAOsPage() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Treasury</p>
-                <p className="text-2xl font-bold">{dao.treasury}</p>
+                <p className="text-2xl font-bold">
+                  <span>{formatNumber(dao.treasury.amount)}</span>
+                  <span className="ml-1">{dao.treasury.symbol}</span>
+                </p>
               </div>
             </div>
           </div>

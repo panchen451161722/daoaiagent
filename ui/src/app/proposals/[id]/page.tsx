@@ -8,64 +8,67 @@ export const metadata: Metadata = {
 
 // Mock data for demonstration
 const mockProposal = {
-  id: 1,
-  title: "Implement New Governance Model",
-  type: "Governance",
-  status: "Active",
-  created: "2024-01-30",
-  creator: "0x1234...5678",
-  summary: "A proposal to improve our governance structure",
-  details: `This proposal aims to implement a new governance model that will enhance our decision-making process and increase community participation. The key points are:
-
-1. Introduction of a two-phase voting system
-2. Implementation of delegation capabilities
-3. Creation of specialized committees
-4. Enhanced transparency measures`,
-  tokenRequest: 1000,
-  fundingPlan: `The requested tokens will be allocated as follows:
-- 40% for technical implementation
-- 30% for community education and outreach
-- 20% for ongoing maintenance
-- 10% for contingency`,
-  expectedOutcome: "Increased participation rate by 50% and faster decision-making process",
-  votes: {
-    for: 120,
-    against: 30,
-    quorum: 200,
+  id: 1390,
+  title: "Talisman - Mobile Wallet Proposal",
+  type: "Treasury",
+  status: "Proposed",
+  created: "2025-01-16",
+  creator: {
+    name: "Warp Lizard | Talisman",
+    avatar: "🦎"
   },
+  beneficiary: {
+    name: "16q8...gAQT",
+    avatar: "🦎"
+  },
+  funding: {
+    amount: 598100,
+    currency: "USDT",
+    releasePercentage: 40
+  },
+  summary: "This proposal seeks funding for a Talisman mobile wallet for both iOS and Android.",
+  details: `We aim to place the distinctive Talisman user experience into the hands of our current and future users – to transform their web3 journey with a seamless mobile app experience. The Talisman mobile wallet will be a new product that will work seamlessly with the existing Talisman browser extension wallet and Portal web application. This is a proactive proposal that seeks US$598,100 in USDT for development of the mobile app (from Mar 2025 to Sep 2025).`,
+  fundingPlan: `The requested funding will be allocated as follows:
+- Development Team (60%): $358,860
+  - Mobile App Development
+  - UI/UX Design
+  - Testing and QA
+- Security Audits (20%): $119,620
+  - External Security Review
+  - Penetration Testing
+- Marketing & User Acquisition (15%): $89,715
+  - Launch Campaign
+  - Community Engagement
+- Contingency (5%): $29,905`,
+  expectedOutcome: `Key deliverables and milestones:
+1. iOS and Android mobile wallet apps with core functionality
+2. Seamless integration with existing Talisman extension
+3. Enhanced security features and user experience
+4. Increased user adoption and engagement
+5. Successful security audits and app store approvals`,
   history: [
     {
       id: 1,
-      date: "2024-01-30",
-      status: "Created",
-      summary: "Proposal submitted for review",
-      aiaMeeting: {
-        id: "M001",
-        participants: ["Coordinator", "Auditor", "Researcher"],
-        summary: "Initial review completed, proceeding to voting phase"
-      }
+      date: "2025-01-16",
+      type: "status",
+      title: "Proposal Created",
+      description: "Proposal submitted for review"
     },
     {
       id: 2,
-      date: "2024-01-31",
-      status: "Under Review",
-      summary: "AIA Committee meeting conducted",
-      aiaMeeting: {
-        id: "M002",
-        participants: ["Coordinator", "Auditor", "Researcher", "Financial Controller"],
-        summary: "Detailed analysis of proposal impact and feasibility"
-      }
+      date: "2025-01-16",
+      type: "meeting",
+      title: "Initial Review Meeting",
+      description: "AIA Committee conducted initial review",
+      meetingId: "M001",
+      participants: ["Coordinator", "Auditor", "Researcher"]
     },
     {
       id: 3,
-      date: "2024-02-01",
-      status: "Active",
-      summary: "Proposal approved for community voting",
-      aiaMeeting: {
-        id: "M003",
-        participants: ["All Committee Members"],
-        summary: "Final approval granted with conditions"
-      }
+      date: "2025-01-17",
+      type: "status",
+      title: "Status Changed to Deciding",
+      description: "Proposal moved to community voting phase"
     }
   ]
 }
@@ -74,14 +77,6 @@ export default function ProposalPage({ params }: { params: { id: string } }) {
   return (
     <div className="container mx-auto py-10">
       <div className="space-y-8">
-        {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold">Proposal #{params.id}</h1>
-          <p className="text-muted-foreground mt-2">
-            View proposal details and current status
-          </p>
-        </div>
-
         <ProposalDetail proposal={mockProposal} />
       </div>
     </div>

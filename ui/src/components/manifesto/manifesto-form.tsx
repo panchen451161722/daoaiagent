@@ -4,6 +4,8 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { Switch } from "@/components/ui/switch"
+import { Label } from "@/components/ui/label"
 import AIAConfigPanel from "./aia-config-panel"
 import ProcessConfig from "./process-config"
 
@@ -11,18 +13,19 @@ export default function ManifestoForm() {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    logo: null as File | null,
-    tokenSymbol: "",
-    initialSupply: "",
+    logo: "🌟", // Default emoji
+    tokenContractAddress: "",
     objective: "",
     values: "",
+    allowIndependentAIA: false
   })
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    // TODO: Handle form submission
     console.log("Form submitted:", formData)
   }
+
+  const emojis = ["🌟", "🚀", "🌈", "🎯", "🔮", "⚡️", "🎨", "🌍", "💫", "🎭", "🦋", "🎪"]
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
@@ -37,62 +40,54 @@ export default function ManifestoForm() {
           <Input
             id="name"
             value={formData.name}
-            onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-            maxLength={60}
-            required
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            className="w-full"
           />
+        </div>
+
+        <div>
+          <label htmlFor="logo" className="block text-sm font-medium mb-1">
+            Logo (Emoji)
+          </label>
+          <div className="grid grid-cols-6 gap-2">
+            {emojis.map((emoji) => (
+              <button
+                key={emoji}
+                type="button"
+                onClick={() => setFormData({ ...formData, logo: emoji })}
+                className={`p-2 text-2xl rounded hover:bg-accent ${
+                  formData.logo === emoji ? "bg-accent" : ""
+                }`}
+              >
+                {emoji}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div>
           <label htmlFor="description" className="block text-sm font-medium mb-1">
             Description
           </label>
-          <Input
+          <Textarea
             id="description"
             value={formData.description}
-            onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-            maxLength={60}
-            required
+            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            className="w-full min-h-[100px]"
           />
         </div>
 
         <div>
-          <label htmlFor="logo" className="block text-sm font-medium mb-1">
-            Logo
+          <label htmlFor="tokenContractAddress" className="block text-sm font-medium mb-1">
+            Token Contract Address
           </label>
           <Input
-            id="logo"
-            type="file"
-            accept="image/*"
-            onChange={(e) => setFormData(prev => ({ ...prev, logo: e.target.files?.[0] || null }))}
+            id="tokenContractAddress"
+            value={formData.tokenContractAddress}
+            onChange={(e) => setFormData({ ...formData, tokenContractAddress: e.target.value })}
+            className="w-full"
+            placeholder="0x..."
           />
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="tokenSymbol" className="block text-sm font-medium mb-1">
-              Token Symbol
-            </label>
-            <Input
-              id="tokenSymbol"
-              value={formData.tokenSymbol}
-              onChange={(e) => setFormData(prev => ({ ...prev, tokenSymbol: e.target.value }))}
-              required
-            />
-          </div>
-          <div>
-            <label htmlFor="initialSupply" className="block text-sm font-medium mb-1">
-              Initial Supply
-            </label>
-            <Input
-              id="initialSupply"
-              type="number"
-              value={formData.initialSupply}
-              onChange={(e) => setFormData(prev => ({ ...prev, initialSupply: e.target.value }))}
-              min="0"
-              required
-            />
-          </div>
         </div>
       </div>
 
@@ -107,7 +102,7 @@ export default function ManifestoForm() {
           <Textarea
             id="objective"
             value={formData.objective}
-            onChange={(e) => setFormData(prev => ({ ...prev, objective: e.target.value }))}
+            onChange={(e) => setFormData({ ...formData, objective: e.target.value })}
             rows={4}
             required
           />
@@ -120,10 +115,28 @@ export default function ManifestoForm() {
           <Textarea
             id="values"
             value={formData.values}
-            onChange={(e) => setFormData(prev => ({ ...prev, values: e.target.value }))}
+            onChange={(e) => setFormData({ ...formData, values: e.target.value })}
             rows={4}
             required
           />
+        </div>
+      </div>
+
+      {/* AIA Settings */}
+      <div className="space-y-4">
+        <h2 className="text-2xl font-bold">AIA Settings</h2>
+        <div className="flex items-center space-x-4">
+          <Switch
+            id="allowIndependentAIA"
+            checked={formData.allowIndependentAIA}
+            onCheckedChange={(checked) => setFormData({ ...formData, allowIndependentAIA: checked })}
+          />
+          <div className="space-y-1">
+            <Label htmlFor="allowIndependentAIA">Allow Independent AIA</Label>
+            <p className="text-sm text-muted-foreground">
+              When enabled, meeting phase 2 will be enabled and all independent AIAs will be able to participate in voting.
+            </p>
+          </div>
         </div>
       </div>
 
