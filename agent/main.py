@@ -52,6 +52,7 @@ class AgentState(TypedDict):
     votes: Dict[str, str]
     next_agent: str
     validation_results: Dict[str, Dict[str, Any]]
+    max_rounds: int
 
 # Agent Definitions
 class BaseAgent:
@@ -66,31 +67,56 @@ class BaseAgent:
             api_key=os.getenv("OPENAI_API_KEY"),
         )
 
-    def get_prompt(self, round_num: int) -> ChatPromptTemplate:
-        return ChatPromptTemplate.from_messages([
-            ("system", f"""You are a {self.role} in the AI Agent Committee with the following responsibilities:
+    def get_prompt(self, round_num: int, max_rounds: int) -> ChatPromptTemplate:
+        return ChatPromptTemplate.from_messages(
+            [
+                (
+                    "system",
+                    f"""You are a {self.role} in the AI Agent Committee with the following responsibilities:
 {self.description}
 
-Current discussion round: {round_num}/3"""),
-            MessagesPlaceholder(variable_name="messages"),
-            ("human", """Please analyze the following proposal from your role's perspective:
+Current discussion round: {round_num}/{max_rounds}
+
+Guidelines:
+1. Keep your analysis brief and focused - maximum 2-3 sentences
+2. Only mention NEW concerns or points not raised in previous discussions
+3. If you have nothing new to add, respond with: PASS
+4. Focus only on your role's perspective""",
+                ),
+                MessagesPlaceholder(variable_name="messages"),
+                (
+                    "human",
+                    """Review the proposal and previous discussions:
+
+Proposal:
 {proposal}
 
 Previous discussions:
 {discussion_history}
 
-Provide your analysis and concerns based on your role. Be specific and professional.""")
-        ])
+Provide your brief analysis or respond with PASS if no new concerns.""",
+                ),
+            ]
+        )
 
     def analyze(self, state: AgentState) -> AgentState:
-        prompt = self.get_prompt(state["current_round"])
+        prompt = self.get_prompt(state["current_round"], state["max_rounds"])
         messages = prompt.format_messages(
             messages=state["messages"],
             proposal=json.dumps(state["proposal"], indent=2),
             discussion_history="\n".join(state["discussion_history"])
         )
         response = self.llm.invoke(messages)
-        state["discussion_history"].append(f"Round {state['current_round']} - {self.role}: {response.content}")
+
+        # Check if response is PASS
+        if "PASS" in response.content:
+            # Skip adding to discussion history if PASS
+            pass
+        else:
+            state["discussion_history"].append(
+                f"Round {state['current_round']} - {self.role}: {response.content}"
+            )
+
         state["messages"].append(AIMessage(content=response.content))
 
         # Determine next agent
@@ -99,7 +125,7 @@ Provide your analysis and concerns based on your role. Be specific and professio
         next_idx = (current_idx + 1) % len(agents)
         state["next_agent"] = agents[next_idx]
 
-        if state["next_agent"] == "coordinator" and state["current_round"] < 3:
+        if state["next_agent"] == "coordinator":
             state["current_round"] += 1
 
         return state
@@ -211,7 +237,7 @@ class ProposalChecker(BaseAgent):
             weight=0.0,  # No voting weight as this is a validation agent
             description="Responsible for initial proposal validation and quick risk assessment."
         )
-    
+
     def precheck(self, state: AgentState) -> AgentState:
         prompt = ChatPromptTemplate.from_messages([
             ("system", "You are the Proposal Checker. Do a quick validation of the proposal."),
@@ -232,11 +258,11 @@ Respond in JSON format:
     "explanation": "brief explanation of decision"
 }}""")
         ])
-        
+
         messages = prompt.format_messages(
             proposal=json.dumps(state["proposal"], indent=2)
         )
-        
+
         response = self.llm.invoke(messages)
         try:
             result = json.loads(response.content)
@@ -253,7 +279,8 @@ Respond in JSON format:
             state["next_agent"] = END
         return state
 
-def create_aiac_graph():
+
+def create_aiac_graph(max_rounds: int = 3):
     # Initialize agents
     checker = ProposalChecker()
     coordinator = ProposalCoordinator()
@@ -293,38 +320,42 @@ def create_aiac_graph():
             .get("proceed_to_review", False)
             else END
         ),
+        ["coordinator", END]
     )
 
-    # From discussion nodes to next in sequence or voting
-    workflow.add_conditional_edges(
-        "coordinator",
-        lambda x: x["next_agent"] if x["current_round"] <= 3 else "coordinator_vote",
-    )
-    workflow.add_conditional_edges(
-        "financial",
-        lambda x: x["next_agent"] if x["current_round"] <= 3 else "financial_vote",
-    )
-    workflow.add_conditional_edges(
-        "technical",
-        lambda x: x["next_agent"] if x["current_round"] <= 3 else "technical_vote",
-    )
+    # Discussion phase
+    workflow.add_edge("coordinator", "financial")
+    workflow.add_edge("financial", "technical")
+    workflow.add_edge("technical", "auditor")
+
+    # Add conditional edge from auditor to either continue discussion or start voting
     workflow.add_conditional_edges(
         "auditor",
-        lambda x: x["next_agent"] if x["current_round"] <= 3 else "auditor_vote",
+        lambda x: (
+            "coordinator_vote"
+            if x["current_round"] >= x["max_rounds"]
+            else "coordinator"
+        ),
+        ["coordinator_vote", "coordinator"]
     )
 
-    # Voting in sequence
+    # Connect voting nodes in sequence
     workflow.add_edge("coordinator_vote", "financial_vote")
     workflow.add_edge("financial_vote", "technical_vote")
     workflow.add_edge("technical_vote", "auditor_vote")
     workflow.add_edge("auditor_vote", "final_decision")
+
+    # Final decision to end
     workflow.add_edge("final_decision", END)
 
     return workflow.compile()
 
-class AIACCommittee:
-    def __init__(self):
-        self.graph = create_aiac_graph()
+
+class AIAgentCommitee:
+
+    def __init__(self, max_rounds: int = 3):
+        self.max_rounds = max_rounds
+        self.graph = create_aiac_graph(max_rounds)
 
     def save_graph_image(self):
         graph_image = Image(self.graph.get_graph().draw_mermaid_png())
@@ -340,7 +371,8 @@ class AIACCommittee:
             discussion_history=[],
             votes={},
             next_agent="coordinator",
-            validation_results={}
+            validation_results={},
+            max_rounds=self.max_rounds,
         )
 
         last_state = None
@@ -373,8 +405,9 @@ class AIACCommittee:
 
         return last_state.get("final_decision", {"decision": "REJECTED", "justification": "Process terminated early"})
 
+
 if __name__ == "__main__":
-    committee = AIACCommittee()
+    committee = AIAgentCommitee()
     committee.save_graph_image()
     test_proposal = Proposal(
         title="AI Research Funding Proposal",
