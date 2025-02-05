@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { StatusTooltip } from "@/components/ui/status-tooltip"
 
 interface ProposalDetailProps {
   proposal: any // TODO: Add proper type
@@ -16,9 +17,11 @@ export function ProposalDetail({ proposal }: ProposalDetailProps) {
         <div className="flex justify-between items-start gap-4">
           <div className="flex-1">
             <div className="flex items-center gap-2">
-              <span className="bg-primary/10 text-primary px-2 py-1 rounded text-sm font-medium">
-                {proposal.status}
-              </span>
+              <StatusTooltip currentStatus={proposal.status}>
+                <span className="bg-primary/10 text-primary px-2 py-1 rounded text-sm font-medium cursor-help">
+                  {proposal.status}
+                </span>
+              </StatusTooltip>
             </div>
             <h1 className="text-3xl font-bold mt-2">
               Proposal #{proposal.id}: {proposal.title}

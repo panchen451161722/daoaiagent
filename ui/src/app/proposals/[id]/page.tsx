@@ -11,7 +11,7 @@ const mockProposal = {
   id: 1390,
   title: "Talisman - Mobile Wallet Proposal",
   type: "Treasury",
-  status: "Deciding",
+  status: "Proposed",
   created: "2025-01-16",
   creator: {
     name: "Warp Lizard | Talisman",
