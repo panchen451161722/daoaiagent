@@ -3,17 +3,15 @@ import operator
 import os
 from dataclasses import dataclass
 from enum import Enum
-from typing import Annotated, Any, Dict, List, Sequence, TypedDict
+from typing import Annotated, Any, Dict, List, Literal, Sequence, TypedDict
 
 from dotenv import load_dotenv
 from IPython.display import Image
-from langchain.prompts import PromptTemplate
-from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
-from langchain_core.output_parsers import JsonOutputParser
+from langchain_core.messages import AIMessage, BaseMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_openai import ChatOpenAI
 from langgraph.graph import END, StateGraph
-from langgraph.prebuilt import ToolExecutor
+from pydantic import BaseModel, Field
 from typing_extensions import TypedDict
 
 load_dotenv()
@@ -27,6 +25,12 @@ class VoteDecision(str, Enum):
 class ValidationResult(str, Enum):
     PASS = "PASS"
     FAIL = "FAIL"
+
+
+class FinalDecision(BaseModel):
+    decision: Literal["APPROVE", "REJECT"]
+    justification: str = Field(description="A brief explanation of the decision")
+
 
 @dataclass
 class Proposal:
@@ -177,11 +181,14 @@ class ChiefAuditor(BaseAgent):
             weight=0.20,
             description="Final approval/veto authority, responsible for overall compliance and risk assessment."
         )
-    
+
     def make_final_decision(self, state: AgentState) -> AgentState:
-        prompt = ChatPromptTemplate.from_messages([
-            ("system", "You are the Chief Auditor with final veto power."),
-            ("human", """Review all discussions and votes to make the final decision.
+        prompt = ChatPromptTemplate.from_messages(
+            [
+                ("system", "You are the Chief Auditor with final veto power."),
+                (
+                    "human",
+                    """Review all discussions and votes to make the final decision.
 
 Full discussion history:
 {discussion_history}
@@ -191,27 +198,20 @@ Votes from committee members:
 
 Proposal:
 {proposal}
+""",
+                ),
+            ]
+        )
 
-Make your final decision in JSON format:
-{{
-    "decision": "APPROVED/REJECTED",
-    "justification": "your detailed justification"
-}}""")
-        ])
-        
         messages = prompt.format_messages(
             discussion_history="\n".join(state["discussion_history"]),
             votes=json.dumps(state["votes"], indent=2),
             proposal=json.dumps(state["proposal"], indent=2)
         )
-        
-        response = self.llm.invoke(messages)
-        try:
-            result = json.loads(response.content)
-            state["final_decision"] = result
-        except:
-            state["final_decision"] = {"decision": "REJECTED", "justification": "Error in decision process"}
-            
+
+        response = self.llm.with_structured_output(FinalDecision).invoke(messages)
+        state["final_decision"] = response
+
         return state
 
 class FinancialController(BaseAgent):
@@ -378,7 +378,6 @@ class AIAgentCommitee:
         last_state = None
         for output in self.graph.stream(initial_state):
             # The output contains the state directly
-            print(output)
             state = output
             last_state = state
 
@@ -410,14 +409,37 @@ if __name__ == "__main__":
     committee = AIAgentCommitee()
     committee.save_graph_image()
     test_proposal = Proposal(
-        title="AI Research Funding Proposal",
-        description="Expand AI research capabilities through implementation of advanced neural architectures and quantum computing integration.",
-        amount=500000.00,
+        title="Implementation of Production-Ready LLM Monitoring System",
+        description="Develop and deploy a comprehensive monitoring system for our LLM applications to track performance metrics, detect anomalies, and ensure responsible AI practices.",
+        amount=175000.00,
         additional_context={
-            "timeline": "12 months",
-            "team_size": 5,
-            "expected_outcomes": "Improved model performance by 40%"
-        }
+            "timeline": "6 months",
+            "team_size": 3,
+            "expected_outcomes": [
+                "Real-time monitoring dashboard for LLM performance metrics",
+                "Automated anomaly detection system with 95% accuracy",
+                "Cost optimization resulting in 20% reduction in API usage",
+                "Compliance reporting system for responsible AI practices",
+            ],
+            "risk_mitigation": {
+                "technical": "Using proven monitoring frameworks and gradual rollout",
+                "financial": "Monthly budget reviews and clear success metrics",
+                "compliance": "Regular audits and documentation of all processes",
+            },
+            "success_metrics": {
+                "performance": "Response time under 100ms for 99% of requests",
+                "reliability": "99.9% uptime for monitoring systems",
+                "cost_efficiency": "20% reduction in overall API costs",
+                "adoption": "100% integration with existing LLM applications",
+            },
+            "phased_implementation": [
+                "Month 1-2: System Design and Core Infrastructure",
+                "Month 3-4: Dashboard Development and Testing",
+                "Month 5: Integration and User Acceptance Testing",
+                "Month 6: Production Deployment and Documentation",
+            ],
+        },
     )
 
     final_decision = committee.review_proposal(test_proposal)
+    print(f"\n\n{final_decision}")
