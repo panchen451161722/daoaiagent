@@ -17,5 +17,8 @@ poetry install
 ## Usage
 
 ```bash
+cp example.env .env
+# Fill in the .env file with your own secrets
+
 poetry run python main.py
 ```
