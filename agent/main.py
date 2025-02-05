@@ -1,19 +1,20 @@
-from typing import List, Dict, Any, Annotated, TypedDict, Sequence
+import json
+import operator
+import os
 from dataclasses import dataclass
 from enum import Enum
-import operator
-import json
-from typing_extensions import TypedDict
+from typing import Annotated, Any, Dict, List, Sequence, TypedDict
 
-from langchain_core.messages import HumanMessage, AIMessage, BaseMessage
-from langchain_openai import ChatOpenAI
-from langchain.prompts import PromptTemplate
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain_core.output_parsers import JsonOutputParser
-from langgraph.graph import StateGraph, END
-from langgraph.prebuilt import ToolExecutor
-import os
 from dotenv import load_dotenv
+from IPython.display import Image
+from langchain.prompts import PromptTemplate
+from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
+from langchain_core.output_parsers import JsonOutputParser
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_openai import ChatOpenAI
+from langgraph.graph import END, StateGraph
+from langgraph.prebuilt import ToolExecutor
+from typing_extensions import TypedDict
 
 load_dotenv()
 
@@ -59,12 +60,12 @@ class BaseAgent:
         self.weight = weight
         self.description = description
         self.llm = ChatOpenAI(
-            model="gpt-4o-mini",
+            model=os.getenv("MODEL"),
             temperature=0.7,
             base_url=os.getenv("BASE_URL"),
-            api_key=os.getenv("OPENAI_API_KEY")
+            api_key=os.getenv("OPENAI_API_KEY"),
         )
-    
+
     def get_prompt(self, round_num: int) -> ChatPromptTemplate:
         return ChatPromptTemplate.from_messages([
             ("system", f"""You are a {self.role} in the AI Agent Committee with the following responsibilities:
@@ -91,16 +92,16 @@ Provide your analysis and concerns based on your role. Be specific and professio
         response = self.llm.invoke(messages)
         state["discussion_history"].append(f"Round {state['current_round']} - {self.role}: {response.content}")
         state["messages"].append(AIMessage(content=response.content))
-        
+
         # Determine next agent
         agents = ["coordinator", "financial", "technical", "auditor"]
         current_idx = agents.index(state["next_agent"])
         next_idx = (current_idx + 1) % len(agents)
         state["next_agent"] = agents[next_idx]
-        
+
         if state["next_agent"] == "coordinator" and state["current_round"] < 3:
             state["current_round"] += 1
-            
+
         return state
 
     def vote(self, state: AgentState) -> AgentState:
@@ -120,19 +121,19 @@ Cast your vote as one of: APPROVE, REJECT, or ABSTAIN. Provide a brief explanati
     "explanation": "your explanation here"
 }}""")
         ])
-        
+
         messages = prompt.format_messages(
             discussion_history="\n".join(state["discussion_history"]),
             proposal=json.dumps(state["proposal"], indent=2)
         )
-        
+
         response = self.llm.invoke(messages)
         try:
             result = json.loads(response.content)
             state["votes"][self.role] = result["vote"]
         except:
             state["votes"][self.role] = VoteDecision.ABSTAIN.value
-            
+
         return state
 
 class ProposalCoordinator(BaseAgent):
@@ -259,79 +260,78 @@ def create_aiac_graph():
     auditor = ChiefAuditor()
     financial = FinancialController()
     technical = TechnicalAdvisor()
-    
+
     # Create workflow graph
     workflow = StateGraph(AgentState)
-    
-    # Add nodes
+
+    # 1. Precheck
     workflow.add_node("precheck", checker.precheck)
+    # 2. analysis nodes
     workflow.add_node("coordinator", coordinator.analyze)
     workflow.add_node("financial", financial.analyze)
     workflow.add_node("technical", technical.analyze)
     workflow.add_node("auditor", auditor.analyze)
+    # 3. voting nodes
     workflow.add_node("coordinator_vote", coordinator.vote)
     workflow.add_node("financial_vote", financial.vote)
     workflow.add_node("technical_vote", technical.vote)
     workflow.add_node("auditor_vote", auditor.vote)
+    # 4. final decision
     workflow.add_node("final_decision", auditor.make_final_decision)
-    
+
     # Set entry point
     workflow.set_entry_point("precheck")
-    
-    # Define routing function
-    def get_next_step(state: AgentState) -> str:
-        if state["next_agent"] == END:
-            return END
-        
-        # After precheck, go to coordinator if passed
-        if state.get("validation_results", {}).get("precheck", {}).get("proceed_to_review", False):
-            state["next_agent"] = "coordinator"
-            return "coordinator"
-        
-        # During discussion rounds
-        if state["current_round"] <= 3:
-            return state["next_agent"]
-        
-        # After discussions, go to voting
-        if state["next_agent"] in ["coordinator", "financial", "technical", "auditor"]:
-            return f"{state['next_agent']}_vote"
-        
-        # During voting phase
-        if "_vote" in state["next_agent"]:
-            current = state["next_agent"].split("_")[0]
-            if current == "coordinator":
-                return "financial_vote"
-            elif current == "financial":
-                return "technical_vote"
-            elif current == "technical":
-                return "auditor_vote"
-            elif current == "auditor":
-                return "final_decision"
-        
-        # After final decision
-        if state["next_agent"] == "final_decision":
-            return END
-        
-        return END
-    
-    # Add edges
-    workflow.add_edge("precheck", get_next_step)
-    workflow.add_edge("coordinator", get_next_step)
-    workflow.add_edge("financial", get_next_step)
-    workflow.add_edge("technical", get_next_step)
-    workflow.add_edge("auditor", get_next_step)
-    workflow.add_edge("coordinator_vote", get_next_step)
-    workflow.add_edge("financial_vote", get_next_step)
-    workflow.add_edge("technical_vote", get_next_step)
-    workflow.add_edge("auditor_vote", get_next_step)
+
+    # If precheck passes → moves to coordinator
+    # If precheck fails → ends workflow
+    workflow.add_conditional_edges(
+        "precheck",
+        lambda x: (
+            "coordinator"
+            if x["validation_results"]
+            .get("precheck", {})
+            .get("proceed_to_review", False)
+            else END
+        ),
+    )
+
+    # From discussion nodes to next in sequence or voting
+    workflow.add_conditional_edges(
+        "coordinator",
+        lambda x: x["next_agent"] if x["current_round"] <= 3 else "coordinator_vote",
+    )
+    workflow.add_conditional_edges(
+        "financial",
+        lambda x: x["next_agent"] if x["current_round"] <= 3 else "financial_vote",
+    )
+    workflow.add_conditional_edges(
+        "technical",
+        lambda x: x["next_agent"] if x["current_round"] <= 3 else "technical_vote",
+    )
+    workflow.add_conditional_edges(
+        "auditor",
+        lambda x: x["next_agent"] if x["current_round"] <= 3 else "auditor_vote",
+    )
+
+    # Voting in sequence
+    workflow.add_edge("coordinator_vote", "financial_vote")
+    workflow.add_edge("financial_vote", "technical_vote")
+    workflow.add_edge("technical_vote", "auditor_vote")
+    workflow.add_edge("auditor_vote", "final_decision")
     workflow.add_edge("final_decision", END)
-    
+
     return workflow.compile()
 
 class AIACCommittee:
     def __init__(self):
         self.graph = create_aiac_graph()
-    
+
+    def save_graph_image(self):
+        graph_image = Image(self.graph.get_graph().draw_mermaid_png())
+        with open("workflow.png", "wb") as f:
+            f.write(graph_image.data)
+        print("Graph visualization saved!")
+
     def review_proposal(self, proposal: Proposal) -> Dict[str, Any]:
         initial_state = AgentState(
             messages=[],
@@ -342,16 +342,17 @@ class AIACCommittee:
             next_agent="coordinator",
             validation_results={}
         )
-        
+
         last_state = None
         for output in self.graph.stream(initial_state):
             # The output contains the state directly
+            print(output)
             state = output
             last_state = state
-            
+
             # Get the current step from next_agent
             current_step = state.get("next_agent", "")
-            
+
             # Handle different steps
             if current_step == "precheck":
                 print("\nProposal Pre-check Results:")
@@ -369,11 +370,12 @@ class AIACCommittee:
             elif current_step == "final_decision":
                 print("\nFinal Decision:")
                 print(json.dumps(state.get("final_decision", {}), indent=2))
-        
+
         return last_state.get("final_decision", {"decision": "REJECTED", "justification": "Process terminated early"})
 
 if __name__ == "__main__":
     committee = AIACCommittee()
+    committee.save_graph_image()
     test_proposal = Proposal(
         title="AI Research Funding Proposal",
         description="Expand AI research capabilities through implementation of advanced neural architectures and quantum computing integration.",
@@ -384,5 +386,5 @@ if __name__ == "__main__":
             "expected_outcomes": "Improved model performance by 40%"
         }
     )
-    
+
     final_decision = committee.review_proposal(test_proposal)
