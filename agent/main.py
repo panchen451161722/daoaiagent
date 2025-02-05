@@ -409,35 +409,66 @@ if __name__ == "__main__":
     committee = AIAgentCommitee()
     committee.save_graph_image()
     test_proposal = Proposal(
-        title="Pilot Implementation of Basic LLM Usage Analytics Dashboard",
-        description="Develop a minimal viable product (MVP) dashboard to track essential LLM usage metrics and costs, serving as a foundation for future monitoring capabilities.",
-        amount=45000.00,
+        title="Pilot Implementation of Secure LLM Analytics Dashboard with Training Program",
+        description="Develop a secure, maintainable MVP dashboard for LLM usage analytics with comprehensive training and support infrastructure.",
+        amount=52000.00,
         additional_context={
-            "timeline": "2 months",
+            "timeline": "3 months",
             "team_size": 1,
             "expected_outcomes": [
                 "Basic dashboard showing daily/weekly LLM API usage patterns",
                 "Simple cost tracking and reporting functionality",
                 "Basic error rate monitoring",
                 "Usage patterns by endpoint/application",
+                "Comprehensive documentation and training materials",
             ],
             "risk_mitigation": {
                 "technical": "Using established open-source monitoring libraries and cloud-native solutions",
                 "financial": "Fixed-price engagement with clear deliverables",
-                "compliance": "Built-in data retention policies and access controls",
+                "compliance": {
+                    "data_privacy": "Implemented data anonymization and encryption at rest",
+                    "access_control": "Role-based access with audit logging",
+                    "retention": "Configurable data retention policies",
+                    "backup": "Automated daily backups with 30-day retention",
+                },
+                "operational": {
+                    "incident_response": "Defined escalation procedures and SLAs",
+                    "maintenance_window": "Scheduled weekly maintenance slots",
+                    "rollback": "Automated rollback procedures for deployments",
+                },
             },
             "success_metrics": {
                 "performance": "Dashboard refresh rate under 5 minutes",
                 "reliability": "99% dashboard uptime",
                 "cost_efficiency": "Implementation cost recovered through 10% API cost reduction in first 6 months",
                 "adoption": "Dashboard actively used by at least 3 teams",
+                "training": "90% user satisfaction rate post-training",
             },
             "phased_implementation": [
-                "Week 1-2: Requirements gathering and design",
-                "Week 3-4: Core dashboard development",
-                "Week 5-6: Testing and team training",
-                "Week 7-8: Deployment and documentation",
+                "Week 1-2: Requirements gathering and security-first design",
+                "Week 3-5: Core dashboard development with security features",
+                "Week 6-8: Testing and security audit",
+                "Week 9-10: Training program development and documentation",
+                "Week 11-12: Pilot deployment and supervised usage",
             ],
+            "support_and_maintenance": {
+                "training": {
+                    "initial": "2 structured training sessions for all users",
+                    "materials": "Video tutorials and comprehensive user guide",
+                    "ongoing": "Monthly office hours for Q&A",
+                },
+                "post_deployment": {
+                    "support_hours": "Business hours support for first 3 months",
+                    "feedback": "Monthly user feedback surveys and improvement cycles",
+                    "maintenance": "Weekly scheduled maintenance window",
+                    "monitoring": "24/7 automated system health checks",
+                },
+                "contingency_plans": {
+                    "data_issues": "Automated data validation and corruption detection",
+                    "system_failure": "Hot-standby backup instance",
+                    "integration": "Fallback endpoints and graceful degradation",
+                },
+            },
         },
     )
 
