@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { DAOSelectDialog } from "./dao-select-dialog"
 import { useState } from "react"
 
 // Mock data for demonstration
@@ -65,64 +66,62 @@ export default function ProposalList() {
 
   return (
     <div className="space-y-6">
-      {/* DAO Filter */}
-      <div className="flex flex-wrap gap-2">
-        <Button
-          variant={selectedDAO === null ? "default" : "outline"}
-          onClick={() => setSelectedDAO(null)}
-        >
-          All DAOs
-        </Button>
-        {mockDAOs.map((dao) => (
-          <Button
-            key={dao.id}
-            variant={selectedDAO === dao.id ? "default" : "outline"}
-            onClick={() => setSelectedDAO(dao.id)}
-          >
-            {dao.name}
-          </Button>
-        ))}
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold">Proposals</h1>
+        <DAOSelectDialog
+          selectedDAO={selectedDAO}
+          setSelectedDAO={setSelectedDAO}
+          daoOptions={mockDAOs}
+        />
       </div>
 
       {/* Proposals */}
       <div className="space-y-4">
-        {filteredProposals.map((proposal) => (
-          <div
-            key={proposal.id}
-            className="border rounded-lg p-6 hover:border-primary/50 transition-colors"
-          >
-            <div className="flex justify-between items-start">
-              <div>
-                <Link
-                  href={`/proposals/${proposal.id}`}
-                  className="text-xl font-semibold hover:underline"
-                >
-                  Proposal #{proposal.id}: {proposal.title}
-                </Link>
-                <div className="flex gap-2 text-sm text-muted-foreground mt-1">
-                  <span>{mockDAOs.find(d => d.id === proposal.daoId)?.name}</span>
-                  <span>•</span>
-                  <span>{proposal.type}</span>
-                  <span>•</span>
-                  <span>Created {proposal.created}</span>
-                  <span>•</span>
-                  <span>by {proposal.creator.name}</span>
+        {filteredProposals.length > 0 ? (
+          filteredProposals.map((proposal) => (
+            <div
+              key={proposal.id}
+              className="border rounded-lg p-6 hover:border-primary/50 transition-colors"
+            >
+              <div className="flex justify-between items-start">
+                <div>
+                  <Link
+                    href={`/proposals/${proposal.id}`}
+                    className="text-xl font-semibold hover:underline"
+                  >
+                    Proposal #{proposal.id}: {proposal.title}
+                  </Link>
+                  <div className="flex gap-2 text-sm text-muted-foreground mt-1">
+                    <span>{mockDAOs.find(d => d.id === proposal.daoId)?.name}</span>
+                    <span>•</span>
+                    <span>{proposal.type}</span>
+                    <span>•</span>
+                    <span>Created {proposal.created}</span>
+                    <span>•</span>
+                    <span>by {proposal.creator.name}</span>
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="text-sm text-muted-foreground">
-                  <div>{proposal.fundingAmount}</div>
-                  <div>Release: {proposal.releasePercentage}</div>
+                <div className="flex items-center gap-4">
+                  <div className="text-sm text-muted-foreground">
+                    <div>{proposal.fundingAmount}</div>
+                    <div>Release: {proposal.releasePercentage}</div>
+                  </div>
+                  <span
+                    className="px-3 py-1 rounded-full text-sm bg-primary/10 text-primary"
+                  >
+                    {proposal.status}
+                  </span>
                 </div>
-                <span
-                  className="px-3 py-1 rounded-full text-sm bg-primary/10 text-primary"
-                >
-                  {proposal.status}
-                </span>
               </div>
             </div>
+          ))
+        ) : (
+          <div className="text-center py-12 border rounded-lg">
+            <h3 className="text-lg font-medium text-muted-foreground mb-2">No proposals yet</h3>
+            <p className="text-sm text-muted-foreground mb-4">Create your first proposal</p>
           </div>
-        ))}
+        )}
       </div>
     </div>
   )

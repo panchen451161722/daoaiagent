@@ -6,7 +6,11 @@ import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 
-export default function ProposalForm() {
+interface ProposalFormProps {
+  daoId: string
+}
+
+export default function ProposalForm({ daoId }: ProposalFormProps) {
   const [formData, setFormData] = useState({
     title: "",
     type: "treasury",
