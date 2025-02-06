@@ -68,7 +68,7 @@ export default function ProposalList() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Proposals</h1>
+        <h1 className="text-3xl font-bold"></h1>
         <DAOSelectDialog
           selectedDAO={selectedDAO}
           setSelectedDAO={setSelectedDAO}

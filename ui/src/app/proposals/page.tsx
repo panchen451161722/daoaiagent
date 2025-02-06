@@ -16,9 +16,6 @@ export default function ProposalsPage() {
           <h1 className="text-3xl font-bold">Proposals</h1>
           <p className="text-muted-foreground">View and manage DAO proposals</p>
         </div>
-        <Link href="/proposals/create">
-          <Button>Create Proposal</Button>
-        </Link>
       </div>
       <ProposalList />
     </div>
