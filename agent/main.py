@@ -1,14 +1,12 @@
 import json
-import operator
 import os
 from dataclasses import dataclass
 from enum import Enum
-from typing import Annotated, Any, Dict, List, Literal, Sequence, TypedDict
+from typing import Any, Dict, List, Literal, TypedDict
 
 from dotenv import load_dotenv
 from IPython.display import Image
-from langchain_core.messages import AIMessage, BaseMessage
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 from langgraph.graph import END, StateGraph
 from pydantic import BaseModel, Field
@@ -331,10 +329,10 @@ def create_aiac_graph(max_rounds: int = 3):
         "auditor",
         lambda x: (
             "coordinator_vote"
-            if x["current_round"] >= x["max_rounds"]
+            if x["current_round"] > x["max_rounds"]
             else "coordinator"
         ),
-        ["coordinator_vote", "coordinator"]
+        ["coordinator_vote", "coordinator"],
     )
 
     # Connect voting nodes in sequence
