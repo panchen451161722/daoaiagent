@@ -60,6 +60,20 @@ class AgentState(TypedDict):
     final_decision: FinalDecision
 
 
+# Add these new models near the top with other data models
+class VoteResult(BaseModel):
+    vote: Literal["APPROVE", "REJECT", "ABSTAIN"]
+    explanation: str = Field(description="Brief explanation for the vote")
+
+
+class PrecheckResult(BaseModel):
+    status: Literal["PASS", "FAIL"]
+    risk_level: Literal["LOW", "MEDIUM", "HIGH"]
+    issues: List[str] = Field(description="List of major issues if any")
+    proceed_to_review: bool
+    explanation: str = Field(description="Brief explanation of decision")
+
+
 # Agent Definitions
 class BaseAgent:
     def __init__(self, role: str, weight: float, description: str):
@@ -68,7 +82,7 @@ class BaseAgent:
         self.description = description
         self.llm = ChatOpenAI(
             model=os.getenv("MODEL"),
-            temperature=0.7,
+            temperature=0,
             base_url=os.getenv("BASE_URL"),
             api_key=os.getenv("OPENAI_API_KEY"),
         )
@@ -133,9 +147,12 @@ Provide your brief analysis or respond with PASS if no new concerns.""",
         return state
 
     def vote(self, state: AgentState) -> AgentState:
-        prompt = ChatPromptTemplate.from_messages([
-            ("system", f"You are the {self.role} in the AI Agent Committee."),
-            ("human", """Based on all discussions and your role's perspective, cast your vote on the proposal.
+        prompt = ChatPromptTemplate.from_messages(
+            [
+                ("system", f"You are the {self.role} in the AI Agent Committee."),
+                (
+                    "human",
+                    """Based on all discussions and your role's perspective, cast your vote on the proposal.
 
 Full discussion history:
 {discussion_history}
@@ -143,24 +160,18 @@ Full discussion history:
 Proposal:
 {proposal}
 
-Cast your vote as one of: APPROVE, REJECT, or ABSTAIN. Provide a brief explanation in JSON format:
-{{
-    "vote": "APPROVE/REJECT/ABSTAIN",
-    "explanation": "your explanation here"
-}}""")
-        ])
+Cast your vote as APPROVE, REJECT, or ABSTAIN with a brief explanation.""",
+                ),
+            ]
+        )
 
         messages = prompt.format_messages(
             discussion_history="\n".join(state["discussion_history"]),
             proposal=json.dumps(state["proposal"], indent=2)
         )
 
-        response = self.llm.invoke(messages)
-        try:
-            result = json.loads(response.content)
-            state["votes"][self.role] = result["vote"]
-        except:
-            state["votes"][self.role] = VoteDecision.ABSTAIN.value
+        response = self.llm.with_structured_output(VoteResult).invoke(messages)
+        state["votes"][self.role] = response.vote
 
         return state
 
@@ -237,9 +248,15 @@ class ProposalChecker(BaseAgent):
         )
 
     def precheck(self, state: AgentState) -> AgentState:
-        prompt = ChatPromptTemplate.from_messages([
-            ("system", "You are the Proposal Checker. Do a quick validation of the proposal."),
-            ("human", """Do a quick check of the following proposal:
+        prompt = ChatPromptTemplate.from_messages(
+            [
+                (
+                    "system",
+                    "You are the Proposal Checker. Do a quick validation of the proposal.",
+                ),
+                (
+                    "human",
+                    """Do a quick check of the following proposal:
 {proposal}
 
 Check for:
@@ -247,34 +264,17 @@ Check for:
 2. Quick feasibility assessment
 3. Major red flags or risks
 
-Respond in JSON format:
-{{
-    "status": "PASS/FAIL",
-    "risk_level": "LOW/MEDIUM/HIGH",
-    "issues": ["list of major issues if any"],
-    "proceed_to_review": true/false,
-    "explanation": "brief explanation of decision"
-}}""")
-        ])
+Provide your assessment including status (PASS/FAIL), risk level (LOW/MEDIUM/HIGH), any major issues, whether to proceed with review, and a brief explanation.""",
+                ),
+            ]
+        )
 
         messages = prompt.format_messages(
             proposal=json.dumps(state["proposal"], indent=2)
         )
-
-        response = self.llm.invoke(messages)
-        try:
-            result = json.loads(response.content)
-            state["validation_results"]["precheck"] = result
-            state["next_agent"] = "coordinator" if result.get("proceed_to_review", False) else END
-        except:
-            state["validation_results"]["precheck"] = {
-                "status": "FAIL",
-                "risk_level": "HIGH",
-                "issues": ["Failed to validate proposal"],
-                "proceed_to_review": False,
-                "explanation": "System error in validation"
-            }
-            state["next_agent"] = END
+        result = self.llm.with_structured_output(PrecheckResult).invoke(messages)
+        state["validation_results"]["precheck"] = result.model_dump()
+        state["next_agent"] = "coordinator" if result.proceed_to_review else END
         return state
 
 
@@ -376,33 +376,10 @@ class AIAgentCommitee:
         )
 
         last_state = None
-        for output in self.graph.stream(initial_state):
-            # The output contains the state directly
-            state = output
+        for state in self.graph.stream(initial_state):
             last_state = state
 
-            # Get the current step from next_agent
-            current_step = state.get("next_agent", "")
-
-            # Handle different steps
-            if current_step == "precheck":
-                print("\nProposal Pre-check Results:")
-                print(json.dumps(state["validation_results"].get("precheck", {}), indent=2))
-                if state["next_agent"] == END:
-                    print("\nProposal rejected during initial validation.")
-                    return {"decision": "REJECTED", "justification": "Failed initial validation"}
-            elif current_step in ["coordinator", "financial", "technical", "auditor"]:
-                print(f"\nRound {state['current_round']} - {current_step.title()} Analysis:")
-                if state["discussion_history"]:
-                    print(state["discussion_history"][-1])
-            elif "vote" in current_step:
-                agent_name = current_step.split("_")[0].title()
-                print(f"\n{agent_name} Vote: {state['votes'].get(agent_name, 'ABSTAIN')}")
-            elif current_step == "final_decision":
-                print("\nFinal Decision:")
-                print(json.dumps(state.get("final_decision", {}), indent=2))
-
-        return last_state.get("final_decision", {"decision": "REJECTED", "justification": "Process terminated early"})
+        return last_state
 
 
 if __name__ == "__main__":
@@ -472,5 +449,5 @@ if __name__ == "__main__":
         },
     )
 
-    final_decision = committee.review_proposal(test_proposal)
-    print(f"\n\n{final_decision}")
+    final_state = committee.review_proposal(test_proposal)
+    print(f"\n\n{final_state}")
