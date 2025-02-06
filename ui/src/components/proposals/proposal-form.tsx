@@ -4,14 +4,17 @@ import { useState } from "react"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
+import { Label } from "@/components/ui/label"
 
 export default function ProposalForm() {
   const [formData, setFormData] = useState({
     title: "",
-    type: "general",
+    type: "treasury",
     summary: "",
     details: "",
-    tokenAmount: "",
+    beneficiary: "",
+    fundingAmount: "",
+    releasePercentage: "",
     fundingPlan: "",
     expectedOutcome: "",
   })
@@ -29,9 +32,7 @@ export default function ProposalForm() {
         <h2 className="text-xl font-semibold">Basic Information</h2>
         <div className="grid gap-4">
           <div>
-            <label htmlFor="title" className="block text-sm font-medium mb-1">
-              Proposal Title
-            </label>
+            <Label htmlFor="title">Proposal Title</Label>
             <Input
               id="title"
               value={formData.title}
@@ -41,31 +42,37 @@ export default function ProposalForm() {
             />
           </div>
           <div>
-            <label htmlFor="type" className="block text-sm font-medium mb-1">
-              Proposal Type
-            </label>
+            <Label htmlFor="type">Proposal Type</Label>
             <select
               id="type"
               value={formData.type}
               onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
               required
             >
-              <option value="general">General</option>
-              <option value="governance">Governance</option>
               <option value="treasury">Treasury</option>
+              <option value="research">Research</option>
+              <option value="governance">Governance</option>
               <option value="technical">Technical</option>
             </select>
           </div>
           <div>
-            <label htmlFor="summary" className="block text-sm font-medium mb-1">
-              Summary
-            </label>
+            <Label htmlFor="summary">Brief Summary</Label>
             <Input
               id="summary"
               value={formData.summary}
               onChange={(e) => setFormData({ ...formData, summary: e.target.value })}
-              placeholder="Brief summary of your proposal"
+              placeholder="One-line summary of your proposal"
+              required
+            />
+          </div>
+          <div>
+            <Label htmlFor="beneficiary">Beneficiary Address</Label>
+            <Input
+              id="beneficiary"
+              value={formData.beneficiary}
+              onChange={(e) => setFormData({ ...formData, beneficiary: e.target.value })}
+              placeholder="0x..."
               required
             />
           </div>
@@ -76,9 +83,7 @@ export default function ProposalForm() {
       <div className="space-y-4">
         <h2 className="text-xl font-semibold">Detailed Content</h2>
         <div>
-          <label htmlFor="details" className="block text-sm font-medium mb-1">
-            Proposal Details
-          </label>
+          <Label htmlFor="details">Proposal Details</Label>
           <Textarea
             id="details"
             value={formData.details}
@@ -90,31 +95,49 @@ export default function ProposalForm() {
         </div>
       </div>
 
-      {/* Funding Request */}
+      {/* Funding Details */}
       <div className="space-y-4">
-        <h2 className="text-xl font-semibold">Funding Request</h2>
+        <h2 className="text-xl font-semibold">Funding Details</h2>
         <div className="grid gap-4">
           <div>
-            <label htmlFor="tokenAmount" className="block text-sm font-medium mb-1">
-              Token Amount
-            </label>
-            <Input
-              id="tokenAmount"
-              type="number"
-              value={formData.tokenAmount}
-              onChange={(e) => setFormData({ ...formData, tokenAmount: e.target.value })}
-              placeholder="Enter requested token amount"
-            />
+            <Label htmlFor="fundingAmount">Funding Amount (USDC)</Label>
+            <div className="relative">
+              <Input
+                id="fundingAmount"
+                value={formData.fundingAmount}
+                onChange={(e) => setFormData({ ...formData, fundingAmount: e.target.value })}
+                placeholder="e.g. 500,000"
+                type="text"
+                required
+              />
+              <span className="absolute right-3 top-2 text-sm text-muted-foreground">USDC</span>
+            </div>
           </div>
           <div>
-            <label htmlFor="fundingPlan" className="block text-sm font-medium mb-1">
-              Funding Plan
-            </label>
+            <Label htmlFor="releasePercentage">Initial Release Percentage</Label>
+            <div className="relative">
+              <Input
+                id="releasePercentage"
+                value={formData.releasePercentage}
+                onChange={(e) => setFormData({ ...formData, releasePercentage: e.target.value })}
+                placeholder="e.g. 40"
+                type="number"
+                min="0"
+                max="100"
+                required
+              />
+              <span className="absolute right-3 top-2 text-sm text-muted-foreground">%</span>
+            </div>
+          </div>
+          <div>
+            <Label htmlFor="fundingPlan">Funding Plan</Label>
             <Textarea
               id="fundingPlan"
               value={formData.fundingPlan}
               onChange={(e) => setFormData({ ...formData, fundingPlan: e.target.value })}
-              placeholder="Describe how the funds will be used"
+              placeholder="Describe how the funds will be used and the release schedule"
+              className="min-h-[150px]"
+              required
             />
           </div>
         </div>
@@ -124,23 +147,24 @@ export default function ProposalForm() {
       <div className="space-y-4">
         <h2 className="text-xl font-semibold">Expected Outcome</h2>
         <div>
-          <label htmlFor="expectedOutcome" className="block text-sm font-medium mb-1">
-            Expected Results
-          </label>
+          <Label htmlFor="expectedOutcome">Expected Results</Label>
           <Textarea
             id="expectedOutcome"
             value={formData.expectedOutcome}
             onChange={(e) => setFormData({ ...formData, expectedOutcome: e.target.value })}
-            placeholder="Describe the expected outcomes and success metrics"
+            placeholder="Describe the expected outcomes, deliverables, and success metrics"
+            className="min-h-[150px]"
             required
           />
         </div>
       </div>
 
       {/* Submit Button */}
-      <Button type="submit" className="w-full sm:w-auto">
-        Submit Proposal
-      </Button>
+      <div className="flex justify-end">
+        <Button type="submit" size="lg">
+          Submit Proposal
+        </Button>
+      </div>
     </form>
   )
 }
