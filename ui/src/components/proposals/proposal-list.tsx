@@ -13,31 +13,46 @@ const mockDAOs = [
 
 const mockProposals = [
   {
-    id: 1,
+    id: 1390,
     daoId: 1,
-    title: "Implement New Governance Model",
-    type: "Governance",
-    status: "Active",
-    created: "2024-01-30",
-    votes: { for: 120, against: 30 },
-  },
-  {
-    id: 2,
-    daoId: 1,
-    title: "Community Fund Allocation",
+    title: "Talisman - Mobile Wallet Proposal",
     type: "Treasury",
-    status: "Pending",
-    created: "2024-01-29",
-    votes: { for: 80, against: 40 },
+    status: "Proposed",
+    created: "2025-01-16",
+    creator: {
+      name: "Warp Lizard | Talisman",
+      address: "0x1234...5678"
+    },
+    fundingAmount: "500,000 USDC",
+    releasePercentage: "40%",
   },
   {
-    id: 3,
+    id: 1389,
+    daoId: 1,
+    title: "Community Fund Allocation Q1 2025",
+    type: "Treasury",
+    status: "Executing",
+    created: "2025-01-15",
+    creator: {
+      name: "DAO Treasury Team",
+      address: "0x9876...4321"
+    },
+    fundingAmount: "1,000,000 USDC",
+    releasePercentage: "25%",
+  },
+  {
+    id: 1388,
     daoId: 2,
-    title: "Research Project Funding",
-    type: "Treasury",
-    status: "Active",
-    created: "2024-01-28",
-    votes: { for: 90, against: 20 },
+    title: "Research Project: Layer 2 Scalability",
+    type: "Research",
+    status: "Finalized",
+    created: "2025-01-14",
+    creator: {
+      name: "Research Working Group",
+      address: "0xabcd...efgh"
+    },
+    fundingAmount: "250,000 USDC",
+    releasePercentage: "100%",
   },
 ]
 
@@ -74,7 +89,7 @@ export default function ProposalList() {
         {filteredProposals.map((proposal) => (
           <div
             key={proposal.id}
-            className="border rounded-lg p-6 space-y-4 hover:border-primary/50 transition-colors"
+            className="border rounded-lg p-6 hover:border-primary/50 transition-colors"
           >
             <div className="flex justify-between items-start">
               <div>
@@ -82,7 +97,7 @@ export default function ProposalList() {
                   href={`/proposals/${proposal.id}`}
                   className="text-xl font-semibold hover:underline"
                 >
-                  {proposal.title}
+                  Proposal #{proposal.id}: {proposal.title}
                 </Link>
                 <div className="flex gap-2 text-sm text-muted-foreground mt-1">
                   <span>{mockDAOs.find(d => d.id === proposal.daoId)?.name}</span>
@@ -90,31 +105,21 @@ export default function ProposalList() {
                   <span>{proposal.type}</span>
                   <span>•</span>
                   <span>Created {proposal.created}</span>
+                  <span>•</span>
+                  <span>by {proposal.creator.name}</span>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-4">
+                <div className="text-sm text-muted-foreground">
+                  <div>{proposal.fundingAmount}</div>
+                  <div>Release: {proposal.releasePercentage}</div>
+                </div>
                 <span
-                  className={`px-3 py-1 rounded-full text-sm ${
-                    proposal.status === "Active"
-                      ? "bg-green-100 text-green-700"
-                      : "bg-yellow-100 text-yellow-700"
-                  }`}
+                  className="px-3 py-1 rounded-full text-sm bg-primary/10 text-primary"
                 >
                   {proposal.status}
                 </span>
               </div>
-            </div>
-            <div className="flex justify-between items-center">
-              <div className="flex gap-4">
-                <div className="text-sm">
-                  <span className="text-green-600">{proposal.votes.for} For</span>
-                  <span className="mx-2">|</span>
-                  <span className="text-red-600">{proposal.votes.against} Against</span>
-                </div>
-              </div>
-              <Link href={`/proposals/${proposal.id}`}>
-                <Button variant="outline">View Details</Button>
-              </Link>
             </div>
           </div>
         ))}
