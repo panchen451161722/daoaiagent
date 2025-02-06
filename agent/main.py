@@ -14,11 +14,13 @@ from typing_extensions import TypedDict
 
 load_dotenv()
 
+
 # Data Models
 class VoteDecision(str, Enum):
     APPROVE = "APPROVE"
     REJECT = "REJECT"
     ABSTAIN = "ABSTAIN"
+
 
 class ValidationResult(str, Enum):
     PASS = "PASS"
@@ -42,7 +44,7 @@ class Proposal:
             "title": self.title,
             "description": self.description,
             "amount": self.amount,
-            "additional_context": self.additional_context
+            "additional_context": self.additional_context,
         }
 
 
@@ -56,6 +58,7 @@ class AgentState(TypedDict):
     validation_results: Dict[str, Dict[str, Any]]
     max_rounds: int
     final_decision: FinalDecision
+    vote_counts: Dict[str, int]
 
 
 # Add these new models near the top with other data models
@@ -74,9 +77,9 @@ class PrecheckResult(BaseModel):
 
 # Agent Definitions
 class BaseAgent:
-    def __init__(self, role: str, weight: float, description: str):
+
+    def __init__(self, role: str, description: str):
         self.role = role
-        self.weight = weight
         self.description = description
         self.llm = ChatOpenAI(
             model=os.getenv("MODEL"),
@@ -165,7 +168,7 @@ Cast your vote as APPROVE, REJECT, or ABSTAIN with a brief explanation.""",
 
         messages = prompt.format_messages(
             discussion_history="\n".join(state["discussion_history"]),
-            proposal=json.dumps(state["proposal"], indent=2)
+            proposal=json.dumps(state["proposal"], indent=2),
         )
 
         response = self.llm.with_structured_output(VoteResult).invoke(messages)
@@ -173,38 +176,50 @@ Cast your vote as APPROVE, REJECT, or ABSTAIN with a brief explanation.""",
 
         return state
 
+
 class ProposalCoordinator(BaseAgent):
     def __init__(self):
         super().__init__(
             role="Proposal Coordinator",
-            weight=0.15,
-            description="Responsible for proposal routing, prioritization, and ensuring proper format and completeness."
+            description="Responsible for proposal routing, prioritization, and ensuring proper format and completeness.",
         )
+
 
 class ChiefAuditor(BaseAgent):
     def __init__(self):
         super().__init__(
             role="Chief Auditor",
-            weight=0.20,
-            description="Final approval/veto authority, responsible for overall compliance and risk assessment."
+            description="Final veto authority, responsible for overall compliance and risk assessment.",
         )
 
     def make_final_decision(self, state: AgentState) -> AgentState:
         prompt = ChatPromptTemplate.from_messages(
             [
-                ("system", "You are the Chief Auditor with final veto power."),
+                (
+                    "system",
+                    """You are the Chief Auditor with veto power. You can only REJECT a proposal 
+            if you find serious compliance or risk issues. You CANNOT approve a proposal directly - 
+            the proposal's approval depends on the majority vote from all committee members.""",
+                ),
                 (
                     "human",
-                    """Review all discussions and votes to make the final decision.
-
+                    """Review all discussions and determine if you need to exercise your veto power.
+                
 Full discussion history:
 {discussion_history}
 
 Votes from committee members:
 {votes}
 
+Vote counts:
+Approve: {approve_count}
+Reject: {reject_count}
+
 Proposal:
 {proposal}
+
+If you find any serious compliance or risk issues, exercise your veto power by responding with REJECT.
+Otherwise, respect the majority vote decision.
 """,
                 ),
             ]
@@ -213,36 +228,54 @@ Proposal:
         messages = prompt.format_messages(
             discussion_history="\n".join(state["discussion_history"]),
             votes=json.dumps(state["votes"], indent=2),
-            proposal=json.dumps(state["proposal"], indent=2)
+            approve_count=state["vote_counts"]["approve"],
+            reject_count=state["vote_counts"]["reject"],
+            proposal=json.dumps(state["proposal"], indent=2),
         )
 
-        response = self.llm.with_structured_output(FinalDecision).invoke(messages)
-        state["final_decision"] = response
+        auditor_decision = self.llm.with_structured_output(FinalDecision).invoke(
+            messages
+        )
+
+        # If auditor doesn't veto (REJECT), use majority vote decision
+        if auditor_decision.decision != "REJECT":
+            majority_decision = (
+                "APPROVE"
+                if state["vote_counts"]["approve"] > state["vote_counts"]["reject"]
+                else "REJECT"
+            )
+            justification = f"Based on majority vote (Approve: {state['vote_counts']['approve']}, Reject: {state['vote_counts']['reject']})"
+            state["final_decision"] = FinalDecision(
+                decision=majority_decision, justification=justification
+            )
+        else:
+            # If auditor vetoes, use their decision and justification
+            state["final_decision"] = auditor_decision
 
         return state
+
 
 class FinancialController(BaseAgent):
     def __init__(self):
         super().__init__(
             role="Financial Controller",
-            weight=0.12,
-            description="Responsible for budget enforcement and financial risk assessment."
+            description="Responsible for budget enforcement and financial risk assessment.",
         )
+
 
 class TechnicalAdvisor(BaseAgent):
     def __init__(self):
         super().__init__(
             role="Technical Advisor",
-            weight=0.08,
-            description="Responsible for technical risk assessment and implementation feasibility."
+            description="Responsible for technical risk assessment and implementation feasibility.",
         )
+
 
 class ProposalChecker(BaseAgent):
     def __init__(self):
         super().__init__(
             role="Proposal Checker",
-            weight=0.0,  # No voting weight as this is a validation agent
-            description="Responsible for initial proposal validation and quick risk assessment."
+            description="Responsible for initial proposal validation and quick risk assessment.",
         )
 
     def precheck(self, state: AgentState) -> AgentState:
@@ -276,13 +309,25 @@ Provide your assessment including status (PASS/FAIL), risk level (LOW/MEDIUM/HIG
         return state
 
 
-def create_aiac_graph(max_rounds: int = 3):
+class VoteCounter:
+    def count_votes(self, state: AgentState) -> AgentState:
+        approve_count = sum(1 for vote in state["votes"].values() if vote == "APPROVE")
+        reject_count = sum(1 for vote in state["votes"].values() if vote == "REJECT")
+
+        # Store vote counts in state
+        state["vote_counts"] = {"approve": approve_count, "reject": reject_count}
+
+        return state
+
+
+def create_aiac_graph():
     # Initialize agents
     checker = ProposalChecker()
     coordinator = ProposalCoordinator()
     auditor = ChiefAuditor()
     financial = FinancialController()
     technical = TechnicalAdvisor()
+    vote_counter = VoteCounter()
 
     # Create workflow graph
     workflow = StateGraph(AgentState)
@@ -301,6 +346,8 @@ def create_aiac_graph(max_rounds: int = 3):
     workflow.add_node("auditor_vote", auditor.vote)
     # 4. final decision
     workflow.add_node("decision", auditor.make_final_decision)
+    # 5. vote counting
+    workflow.add_node("count_votes", vote_counter.count_votes)
 
     # Set entry point
     workflow.set_entry_point("precheck")
@@ -316,7 +363,7 @@ def create_aiac_graph(max_rounds: int = 3):
             .get("proceed_to_review", False)
             else END
         ),
-        ["coordinator", END]
+        ["coordinator", END],
     )
 
     # Discussion phase
@@ -339,7 +386,8 @@ def create_aiac_graph(max_rounds: int = 3):
     workflow.add_edge("coordinator_vote", "financial_vote")
     workflow.add_edge("financial_vote", "technical_vote")
     workflow.add_edge("technical_vote", "auditor_vote")
-    workflow.add_edge("auditor_vote", "decision")
+    workflow.add_edge("auditor_vote", "count_votes")
+    workflow.add_edge("count_votes", "decision")
 
     # Final decision to end
     workflow.add_edge("decision", END)
@@ -351,7 +399,7 @@ class AIAgentCommitee:
 
     def __init__(self, max_rounds: int = 3):
         self.max_rounds = max_rounds
-        self.graph = create_aiac_graph(max_rounds)
+        self.graph = create_aiac_graph()
 
     def save_graph_image(self):
         graph_image = Image(self.graph.get_graph().draw_mermaid_png())
@@ -371,6 +419,7 @@ class AIAgentCommitee:
             final_decision=FinalDecision(
                 decision="REJECT", justification="internal error"
             ),
+            vote_counts={"approve": 0, "reject": 0},
         )
 
         last_state = None
