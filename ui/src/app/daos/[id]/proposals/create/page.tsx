@@ -4,17 +4,6 @@ import { use } from "react"
 import ProposalForm from "@/components/proposals/proposal-form"
 import { useDAOStore } from "@/lib/store/dao"
 
-// Mock data for demonstration
-const mockDAO = {
-  id: "1",
-  name: "DeFi DAO",
-  description: "A decentralized organization focused on DeFi governance and innovation",
-  logo: "/dao-logo.png",
-  treasury: "1.5M USDC",
-  members: 1200,
-  activeProposals: 8,
-}
-
 interface PageProps {
   params: Promise<{
     id: string

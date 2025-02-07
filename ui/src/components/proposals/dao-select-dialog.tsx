@@ -12,13 +12,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 
-// Mock data for demonstration
-const mockDAOs = [
-  { id: 1, name: "DeveloperDAO", description: "A DAO focused on developer tooling and infrastructure" },
-  { id: 2, name: "ResearchDAO", description: "Advancing blockchain research and innovation" },
-  { id: 3, name: "CommunityDAO", description: "Building and nurturing the Web3 community" },
-]
-
 interface DAOSelectDialogProps {
   selectedDAO: number | null
   setSelectedDAO: Dispatch<SetStateAction<number | null>>

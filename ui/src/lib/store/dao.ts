@@ -42,6 +42,25 @@ export interface DAO {
   }
 }
 
+export interface ProposalHistory {
+  id: number
+  date: string
+  type: 'status' | 'meeting'
+  title: string
+  description: string
+  meetingId?: string
+}
+
+interface Creator {
+  name: string
+  avatar?: string
+}
+
+interface Beneficiary {
+  name: string
+  avatar?: string
+}
+
 export interface Proposal {
   id: number
   daoId: number
@@ -49,31 +68,67 @@ export interface Proposal {
   type: 'treasury' | 'research' | 'governance' | 'technical'
   status: 'Proposed' | 'Active' | 'Executing' | 'Completed' | 'Failed'
   created: string
-  creator: {
+  creator: Creator
+  beneficiary?: Beneficiary
+  funding?: {
+    amount: number
+    currency: string
+    releasePercentage: number
+  }
+  summary?: string
+  details?: string
+  fundingPlan?: string
+  expectedOutcome?: string
+  history?: ProposalHistory[]
+}
+
+export interface MeetingParticipant {
+  role: string
+  name: string
+  avatar: string
+  address?: string
+  vote?: string
+  comments?: string
+}
+
+export interface DiscussionItem {
+  speaker: {
+    role: string
     name: string
-    address: string
+    avatar: string
   }
-  fundingAmount: string
-  releasePercentage: string
-  description?: string
-  votes?: {
-    for: number
-    against: number
-    abstain: number
-  }
-  quorum?: number
-  endTime?: string
+  content: string
+}
+
+export interface Meeting {
+  id: string
+  daoId: string
+  daoName: string
+  proposalId: string
+  proposalTitle: string
+  date: string
+  status: 'Scheduled' | 'In Progress' | 'Completed'
+  participants: MeetingParticipant[]
+  summary: string
+  discussion?: DiscussionItem[]
+  decisions?: string[]
+  nextSteps?: string[]
 }
 
 interface DAOStore {
   daos: DAO[]
   proposals: Proposal[]
+  meetings: Meeting[]
   selectedDAO: number | null
   setSelectedDAO: (id: number | null) => void
   addDAO: (dao: DAO) => void
   addProposal: (proposal: Proposal) => void
+  addMeeting: (meeting: Meeting) => void
   getDAOById: (id: number) => DAO | undefined
+  getProposalById: (id: number) => Proposal | undefined
+  getMeetingById: (id: string) => Meeting | undefined
   getProposalsByDAOId: (daoId: number) => Proposal[]
+  getMeetingsByProposalId: (proposalId: string) => Meeting[]
 }
 
 // Initial data
@@ -191,11 +246,21 @@ const initialProposals: Proposal[] = [
     created: "2025-01-16",
     creator: {
       name: "Warp Lizard | Talisman",
-      address: "0x1234...5678"
+      avatar: "🦎"
     },
-    fundingAmount: "500,000 USDC",
-    releasePercentage: "40%",
-    description: "Development of a mobile wallet application with integrated DAO governance features",
+    beneficiary: {
+      name: "16q8...gAQT",
+      avatar: "🦎"
+    },
+    funding: {
+      amount: 598100,
+      currency: "USDT",
+      releasePercentage: 40
+    },
+    summary: "This proposal seeks funding for a Talisman mobile wallet for both iOS and Android.",
+    details: "We aim to place the distinctive Talisman user experience into the hands of our current and future users – to transform their web3 journey with a seamless mobile app experience. The Talisman mobile wallet will be a new product that will work seamlessly with the existing Talisman browser extension wallet and Portal web application. This is a proactive proposal that seeks US$598,100 in USDT for development of the mobile app (from Mar 2025 to Sep 2025).",
+    fundingPlan: "The requested funding will be allocated as follows:\n- Development Team (60%): $358,860\n  - Mobile App Development\n  - UI/UX Design\n  - Testing and QA\n- Security Audits (20%): $119,620\n  - External Security Review\n  - Penetration Testing\n- Marketing & User Acquisition (15%): $89,715\n  - Launch Campaign\n  - Community Engagement\n- Contingency (5%): $29,905",
+    expectedOutcome: "Key deliverables and milestones:\n1. iOS and Android mobile wallet apps with core functionality\n2. Seamless integration with existing Talisman extension\n3. Enhanced security features and user experience\n4. Increased user adoption and engagement\n5. Successful security audits and app store approvals",
     votes: {
       for: 15000,
       against: 5000,
@@ -203,6 +268,31 @@ const initialProposals: Proposal[] = [
     },
     quorum: 20000,
     endTime: "2025-02-16",
+    history: [
+      {
+        id: 1,
+        date: "2025-01-16",
+        type: "status",
+        title: "Proposal Created",
+        description: "Proposal submitted for review"
+      },
+      {
+        id: 2,
+        date: "2025-01-16",
+        type: "meeting",
+        title: "Initial Review Meeting",
+        description: "AIA Committee conducted initial review",
+        meetingId: "M001",
+        participants: ["Coordinator", "Auditor", "Researcher"]
+      },
+      {
+        id: 3,
+        date: "2025-01-17",
+        type: "status",
+        title: "Status Changed to Deciding",
+        description: "Proposal moved to community voting phase"
+      }
+    ]
   },
   {
     id: 1389,
@@ -233,7 +323,139 @@ const initialProposals: Proposal[] = [
     fundingAmount: "250,000 USDC",
     releasePercentage: "100%",
     description: "Research project focused on improving Layer 2 scalability solutions",
+  }
+]
+
+const initialMeetings: Meeting[] = [
+  {
+    id: "M001",
+    daoId: "1",
+    daoName: "DeFi DAO",
+    proposalId: "1390",
+    proposalTitle: "Talisman - Mobile Wallet Proposal",
+    date: "2024-01-30",
+    status: "Completed",
+    participants: [
+      {
+        role: "Coordinator",
+        name: "Proposal Coordinator",
+        avatar: "/aia/coordinator.png",
+        address: "0x1234...5678",
+        vote: "Approve",
+        comments: "The proposal aligns with our governance objectives"
+      },
+      {
+        role: "Auditor",
+        name: "Risk Auditor",
+        avatar: "/aia/auditor.png",
+        address: "0x2345...6789",
+        vote: "Approve",
+        comments: "Risk assessment shows acceptable levels"
+      },
+      {
+        role: "Researcher",
+        name: "Technical Researcher",
+        avatar: "/aia/researcher.png",
+        address: "0x3456...7890",
+        vote: "Approve",
+        comments: "Technical implementation appears feasible"
+      }
+    ],
+    summary: "Initial review completed, proceeding to voting phase",
+    discussion: [
+      {
+        speaker: {
+          role: "Coordinator",
+          name: "Proposal Coordinator",
+          avatar: "/aia/coordinator.png"
+        },
+        content: "Meeting called to order. Today we will review proposal #123 regarding the new governance model."
+      },
+      {
+        speaker: {
+          role: "Researcher",
+          name: "Technical Researcher",
+          avatar: "/aia/researcher.png"
+        },
+        content: "Based on my analysis, the proposed changes are technically sound and can be implemented within the suggested timeframe."
+      },
+      {
+        speaker: {
+          role: "Auditor",
+          name: "Risk Auditor",
+          avatar: "/aia/auditor.png"
+        },
+        content: "I've reviewed the potential risks. The main concerns are..."
+      },
+      {
+        speaker: {
+          role: "Coordinator",
+          name: "Proposal Coordinator",
+          avatar: "/aia/coordinator.png"
+        },
+        content: "Let's proceed with the voting phase. Please submit your votes with comments."
+      }
+    ],
+    decisions: [
+      "Proposal approved for community voting",
+      "Implementation timeline accepted",
+      "Risk mitigation measures to be documented"
+    ],
+    nextSteps: [
+      "Prepare community announcement",
+      "Set up voting infrastructure",
+      "Schedule follow-up review in 2 weeks"
+    ]
   },
+  {
+    id: "M002",
+    daoId: "2",
+    daoName: "NFT Creators",
+    proposalId: "P2",
+    proposalTitle: "Artist Verification System",
+    date: "2024-01-29",
+    status: "Scheduled",
+    participants: [
+      {
+        role: "Coordinator",
+        name: "Proposal Coordinator",
+        avatar: "/aia/coordinator.png"
+      },
+      {
+        role: "Technical Advisor",
+        name: "Technical Advisor",
+        avatar: "/aia/advisor.png"
+      }
+    ],
+    summary: "Technical review of verification system requirements"
+  },
+  {
+    id: "M003",
+    daoId: "3",
+    daoName: "Gaming Guild",
+    proposalId: "P3",
+    proposalTitle: "New Game Integration",
+    date: "2024-01-28",
+    status: "In Progress",
+    participants: [
+      {
+        role: "Coordinator",
+        name: "Proposal Coordinator",
+        avatar: "/aia/coordinator.png"
+      },
+      {
+        role: "Researcher",
+        name: "Technical Researcher",
+        avatar: "/aia/researcher.png"
+      },
+      {
+        role: "Financial Controller",
+        name: "Financial Controller",
+        avatar: "/aia/controller.png"
+      }
+    ],
+    summary: "Evaluating integration costs and technical requirements"
+  }
 ]
 
 export const useDAOStore = create<DAOStore>()(
@@ -241,12 +463,17 @@ export const useDAOStore = create<DAOStore>()(
     (set, get) => ({
       daos: initialDAOs,
       proposals: initialProposals,
+      meetings: initialMeetings,
       selectedDAO: null,
       setSelectedDAO: (id) => set({ selectedDAO: id }),
       addDAO: (dao) => set((state) => ({ daos: [...state.daos, dao] })),
       addProposal: (proposal) => set((state) => ({ proposals: [...state.proposals, proposal] })),
+      addMeeting: (meeting) => set((state) => ({ meetings: [...state.meetings, meeting] })),
       getDAOById: (id) => get().daos.find(dao => dao.id === id),
+      getProposalById: (id) => get().proposals.find(proposal => proposal.id === id),
+      getMeetingById: (id) => get().meetings.find(meeting => meeting.id === id),
       getProposalsByDAOId: (daoId) => get().proposals.filter(proposal => proposal.daoId === daoId),
+      getMeetingsByProposalId: (proposalId) => get().meetings.filter(meeting => meeting.proposalId === proposalId),
     }),
     {
       name: 'dao-storage',

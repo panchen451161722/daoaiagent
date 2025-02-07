@@ -2,50 +2,16 @@ import { Metadata } from "next"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { useDAOStore } from "@/lib/store/dao"
 
 export const metadata: Metadata = {
   title: "AIA Meetings",
   description: "View all AIA meetings across DAOs",
 }
 
-// Mock data for demonstration
-const mockMeetings = [
-  {
-    id: "M001",
-    daoId: "1",
-    daoName: "DeFi DAO",
-    proposalId: "P1",
-    proposalTitle: "Implement New Governance Model",
-    date: "2024-01-30",
-    status: "Completed",
-    participants: ["Coordinator", "Auditor", "Researcher"],
-    summary: "Initial review completed, proceeding to voting phase"
-  },
-  {
-    id: "M002",
-    daoId: "2",
-    daoName: "NFT Creators",
-    proposalId: "P2",
-    proposalTitle: "Artist Verification System",
-    date: "2024-01-29",
-    status: "Scheduled",
-    participants: ["Coordinator", "Technical Advisor"],
-    summary: "Technical review of verification system requirements"
-  },
-  {
-    id: "M003",
-    daoId: "3",
-    daoName: "Gaming Guild",
-    proposalId: "P3",
-    proposalTitle: "New Game Integration",
-    date: "2024-01-28",
-    status: "In Progress",
-    participants: ["Coordinator", "Researcher", "Financial Controller"],
-    summary: "Evaluating integration costs and technical requirements"
-  }
-]
-
 export default function MeetingsPage() {
+  const { meetings } = useDAOStore()
+
   return (
     <div className="container mx-auto py-10">
       <div className="flex justify-between items-center mb-8">
@@ -56,7 +22,7 @@ export default function MeetingsPage() {
       </div>
 
       <div className="space-y-6">
-        {mockMeetings.map((meeting) => (
+        {meetings.map((meeting) => (
           <div key={meeting.id} className="border rounded-lg p-6">
             <div className="flex justify-between items-start mb-4">
               <div>
@@ -100,7 +66,7 @@ export default function MeetingsPage() {
                     key={index}
                     className="px-2 py-1 bg-secondary rounded-full text-xs"
                   >
-                    {participant}
+                    {participant.role}
                   </span>
                 ))}
               </div>
