@@ -1,13 +1,9 @@
-import { Metadata } from "next"
+"use client"
+
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { useDAOStore } from "@/lib/store/dao"
-
-export const metadata: Metadata = {
-  title: "AIA Meetings",
-  description: "View all AIA meetings across DAOs",
-}
 
 export default function MeetingsPage() {
   const { meetings } = useDAOStore()

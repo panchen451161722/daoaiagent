@@ -1,12 +1,8 @@
-import { Metadata } from "next"
+"use client"
+
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import ProposalList from "@/components/proposals/proposal-list"
-
-export const metadata: Metadata = {
-  title: "Proposals",
-  description: "View and manage DAO proposals",
-}
 
 export default function ProposalsPage() {
   return (
