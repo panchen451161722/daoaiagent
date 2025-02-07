@@ -24,6 +24,10 @@ export default function CreateAIAPage() {
             <h2 className="text-xl font-semibold">Basic Information</h2>
             <div className="space-y-4">
               <div>
+                <Label htmlFor="emoji">Emoji</Label>
+                <Input id="emoji" placeholder="e.g., 🤖" className="w-24" />
+              </div>
+              <div>
                 <Label htmlFor="name">Name</Label>
                 <Input id="name" placeholder="e.g., Technical Advisor" />
               </div>

@@ -31,6 +31,7 @@ interface AIA {
   id: string
   role: string
   type: 'Internal' | 'Public'
+  emoji: string
   description: string
   permissions: string[]
   abilities?: string[]
@@ -54,6 +55,7 @@ export const useAIAStore = create<AIAStore>((set, get) => ({
       id: "1",
       role: "Proposal Coordinator",
       type: "Internal",
+      emoji: "📋",
       description: "Coordinates proposal reviews and voting processes",
       activeDAOs: 3,
       totalMeetings: 45,
@@ -98,6 +100,7 @@ export const useAIAStore = create<AIAStore>((set, get) => ({
       id: "2",
       role: "Auditor",
       type: "Internal",
+      emoji: "",
       description: "Reviews and validates proposal compliance",
       activeDAOs: 5,
       totalMeetings: 78,
@@ -108,6 +111,7 @@ export const useAIAStore = create<AIAStore>((set, get) => ({
       id: "3",
       role: "Technical Advisor",
       type: "Public",
+      emoji: "",
       description: "Provides technical expertise and feasibility assessment",
       activeDAOs: 8,
       totalMeetings: 92,
@@ -118,6 +122,7 @@ export const useAIAStore = create<AIAStore>((set, get) => ({
       id: "4",
       role: "Financial Controller",
       type: "Public",
+      emoji: "",
       description: "Oversees financial aspects and treasury management",
       activeDAOs: 6,
       totalMeetings: 63,

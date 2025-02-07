@@ -26,6 +26,7 @@ export default function AIAsPage() {
             <div className="flex justify-between items-start mb-4">
               <div>
                 <div className="flex items-center gap-2 mb-1">
+                  <span className="text-2xl">{aia.emoji || "🤖"}</span>
                   <h2 className="text-xl font-semibold">
                     <Link href={`/aias/${aia.id}`} className="hover:underline">
                       {aia.role}
@@ -45,20 +46,6 @@ export default function AIAsPage() {
               <Link href={`/aias/${aia.id}`}>
                 <Button variant="outline">View Details</Button>
               </Link>
-            </div>
-            <div className="grid grid-cols-3 gap-4">
-              <div>
-                <p className="text-sm text-muted-foreground">Active DAOs</p>
-                <p className="text-2xl font-bold">{aia.activeDAOs}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Total Meetings</p>
-                <p className="text-2xl font-bold">{aia.totalMeetings}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Recent Activity</p>
-                <p className="text-sm truncate">{aia.recentActivity}</p>
-              </div>
             </div>
           </div>
         ))}
