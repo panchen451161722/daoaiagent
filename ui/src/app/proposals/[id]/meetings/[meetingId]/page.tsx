@@ -25,15 +25,6 @@ export default function MeetingPage({ params }: PageProps) {
 
   return (
     <div className="container mx-auto py-10">
-      {/* Back Link */}
-      <div className="mb-8">
-        <Link href={`/proposals/${id}`}>
-          <Button variant="ghost" className="pl-0 hover:pl-2 transition-all">
-            ← Back to Proposal
-          </Button>
-        </Link>
-      </div>
-
       <div className="max-w-4xl mx-auto space-y-8">
         {/* Header */}
         <div>
@@ -55,7 +46,13 @@ export default function MeetingPage({ params }: PageProps) {
             </span>
           </div>
           <h1 className="text-3xl font-bold mb-2">{meeting.proposalTitle}</h1>
-          <p className="text-muted-foreground">{meeting.summary}</p>
+          <Link 
+            href={`/proposals/${id}`}
+            className="text-sm text-muted-foreground hover:text-primary transition-colors"
+          >
+            View Related Proposal →
+          </Link>
+          <p className="text-muted-foreground mt-4">{meeting.summary}</p>
         </div>
 
         {/* Participants */}
