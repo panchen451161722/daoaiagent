@@ -3,66 +3,13 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { DAOSelectDialog } from "./dao-select-dialog"
-import { useState } from "react"
-
-// Mock data for demonstration
-const mockDAOs = [
-  { id: 1, name: "DeveloperDAO" },
-  { id: 2, name: "ResearchDAO" },
-  { id: 3, name: "CommunityDAO" },
-]
-
-const mockProposals = [
-  {
-    id: 1390,
-    daoId: 1,
-    title: "Talisman - Mobile Wallet Proposal",
-    type: "Treasury",
-    status: "Proposed",
-    created: "2025-01-16",
-    creator: {
-      name: "Warp Lizard | Talisman",
-      address: "0x1234...5678"
-    },
-    fundingAmount: "500,000 USDC",
-    releasePercentage: "40%",
-  },
-  {
-    id: 1389,
-    daoId: 1,
-    title: "Community Fund Allocation Q1 2025",
-    type: "Treasury",
-    status: "Executing",
-    created: "2025-01-15",
-    creator: {
-      name: "DAO Treasury Team",
-      address: "0x9876...4321"
-    },
-    fundingAmount: "1,000,000 USDC",
-    releasePercentage: "25%",
-  },
-  {
-    id: 1388,
-    daoId: 2,
-    title: "Research Project: Layer 2 Scalability",
-    type: "Research",
-    status: "Finalized",
-    created: "2025-01-14",
-    creator: {
-      name: "Research Working Group",
-      address: "0xabcd...efgh"
-    },
-    fundingAmount: "250,000 USDC",
-    releasePercentage: "100%",
-  },
-]
+import { useDAOStore } from "@/lib/store/dao"
 
 export default function ProposalList() {
-  const [selectedDAO, setSelectedDAO] = useState<number | null>(null)
-
-  const filteredProposals = selectedDAO
-    ? mockProposals.filter(p => p.daoId === selectedDAO)
-    : mockProposals
+  const { proposals, daos, selectedDAO, setSelectedDAO } = useDAOStore()
+  const filteredProposals = selectedDAO 
+    ? proposals.filter(p => p.daoId === selectedDAO)
+    : proposals
 
   return (
     <div className="space-y-6">
@@ -72,7 +19,7 @@ export default function ProposalList() {
         <DAOSelectDialog
           selectedDAO={selectedDAO}
           setSelectedDAO={setSelectedDAO}
-          daoOptions={mockDAOs}
+          daoOptions={daos}
         />
       </div>
 
@@ -93,7 +40,7 @@ export default function ProposalList() {
                     Proposal #{proposal.id}: {proposal.title}
                   </Link>
                   <div className="flex gap-2 text-sm text-muted-foreground mt-1">
-                    <span>{mockDAOs.find(d => d.id === proposal.daoId)?.name}</span>
+                    <span>{daos.find(d => d.id === proposal.daoId)?.name}</span>
                     <span>•</span>
                     <span>{proposal.type}</span>
                     <span>•</span>
@@ -120,6 +67,11 @@ export default function ProposalList() {
           <div className="text-center py-12 border rounded-lg">
             <h3 className="text-lg font-medium text-muted-foreground mb-2">No proposals yet</h3>
             <p className="text-sm text-muted-foreground mb-4">Create your first proposal</p>
+            <DAOSelectDialog
+              selectedDAO={selectedDAO}
+              setSelectedDAO={setSelectedDAO}
+              daoOptions={daos}
+            />
           </div>
         )}
       </div>
