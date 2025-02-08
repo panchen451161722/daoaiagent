@@ -1,14 +1,68 @@
 "use client"
 
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu"
+import { 
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import { 
+  HelpCircle, 
+  ChevronDown, 
+  X 
+} from "lucide-react"
 import { useAIAStore } from "@/lib/store/aia"
 
+const predefinedPrompts = {
+  "Core Role": {
+    type: "system",
+    description: "Core role definition",
+    content: "You are an AI Agent with specific responsibilities in the DAO governance process."
+  },
+  "Task Template": {
+    type: "human",
+    description: "Basic task template",
+    content: "Review the following:\n{proposal}\n\nProvide your assessment based on your role and responsibilities."
+  },
+  "Vote Template": {
+    type: "human",
+    description: "Voting decision template",
+    content: "Review discussions and votes:\n{discussion_history}\n\nVotes: {votes}\nApprove: {approve_count}\nReject: {reject_count}\n\nProposal: {proposal}"
+  }
+}
+
+const variableHints = {
+  "{proposal}": "The current proposal being reviewed",
+  "{discussion_history}": "Previous discussions and comments",
+  "{votes}": "Current votes from committee members",
+  "{approve_count}": "Number of approve votes",
+  "{reject_count}": "Number of reject votes"
+}
+
 export default function CreateAIAPage() {
-  const { abilities, permissions } = useAIAStore()
+  const { abilities } = useAIAStore()
+  const [prompts, setPrompts] = useState([predefinedPrompts["Core Role"]])
+  const [type, setType] = useState("Internal")
+
+  const addPrompt = (promptKey: keyof typeof predefinedPrompts) => {
+    setPrompts([...prompts, predefinedPrompts[promptKey]])
+  }
+
+  const removePrompt = (index: number) => {
+    setPrompts(prompts.filter((_, i) => i !== index))
+  }
 
   return (
     <div className="container mx-auto py-10">
@@ -28,39 +82,121 @@ export default function CreateAIAPage() {
                 <Input id="emoji" placeholder="e.g., 🤖" className="w-24" />
               </div>
               <div>
-                <Label htmlFor="name">Name</Label>
-                <Input id="name" placeholder="e.g., Technical Advisor" />
+                <Label htmlFor="role">Role</Label>
+                <Input id="role" placeholder="e.g., Technical Advisor" />
               </div>
               <div>
                 <Label htmlFor="description">Description</Label>
-                <Textarea 
-                  id="description" 
-                  placeholder="Describe the role and responsibilities of this AI Agent"
+                <Textarea
+                  id="description"
+                  placeholder="e.g., Responsible for technical risk assessment and implementation feasibility."
+                  className="h-20"
                 />
+              </div>
+              <div>
+                <Label>Type</Label>
+                <ToggleGroup type="single" value={type} onValueChange={(value) => value && setType(value)} className="justify-start mt-2">
+                  <ToggleGroupItem value="Internal">Internal</ToggleGroupItem>
+                  <ToggleGroupItem value="Public">Public</ToggleGroupItem>
+                </ToggleGroup>
               </div>
             </div>
           </div>
 
-          {/* Prompt Configuration */}
+          {/* Prompts */}
           <div className="space-y-4">
-            <h2 className="text-xl font-semibold">Prompt Configuration</h2>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="system-prompt">System Prompt</Label>
-                <Textarea 
-                  id="system-prompt" 
-                  placeholder="Define the core behavior and principles of the AI Agent"
-                  className="min-h-[150px]"
-                />
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <h2 className="text-xl font-semibold">Prompts</h2>
+                <Popover>
+                  <PopoverTrigger>
+                    <HelpCircle className="h-4 w-4 text-muted-foreground" />
+                  </PopoverTrigger>
+                  <PopoverContent className="w-80">
+                    <div className="space-y-2">
+                      <h3 className="font-medium">Available Variables</h3>
+                      <div className="space-y-1">
+                        {Object.entries(variableHints).map(([variable, description]) => (
+                          <div key={variable} className="text-sm">
+                            <code className="text-muted-foreground">{variable}</code>
+                            <span className="text-muted-foreground"> - {description}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </PopoverContent>
+                </Popover>
               </div>
-              <div>
-                <Label htmlFor="example-conversations">Example Conversations</Label>
-                <Textarea 
-                  id="example-conversations" 
-                  placeholder="Provide example conversations to guide the AI Agent's responses"
-                  className="min-h-[150px]"
-                />
-              </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    Add Prompt <ChevronDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  {Object.keys(predefinedPrompts).map((key) => (
+                    <DropdownMenuItem key={key} onSelect={() => addPrompt(key as keyof typeof predefinedPrompts)}>
+                      {key}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+            <div className="space-y-6">
+              {prompts.map((prompt, index) => (
+                <div key={index} className="border rounded-lg p-4 space-y-4 relative">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-2 top-2 h-6 w-6"
+                    onClick={() => removePrompt(index)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                  <div>
+                    <Label>Type</Label>
+                    <ToggleGroup 
+                      type="single" 
+                      value={prompt.type}
+                      onValueChange={(value) => {
+                        if (value) {
+                          const newPrompts = [...prompts]
+                          newPrompts[index].type = value as "system" | "human"
+                          setPrompts(newPrompts)
+                        }
+                      }}
+                      className="justify-start mt-2"
+                    >
+                      <ToggleGroupItem value="system">System</ToggleGroupItem>
+                      <ToggleGroupItem value="human">Human</ToggleGroupItem>
+                    </ToggleGroup>
+                  </div>
+                  <div>
+                    <Label>Description</Label>
+                    <Input 
+                      value={prompt.description}
+                      onChange={(e) => {
+                        const newPrompts = [...prompts]
+                        newPrompts[index].description = e.target.value
+                        setPrompts(newPrompts)
+                      }}
+                      placeholder="e.g., Core role definition" 
+                    />
+                  </div>
+                  <div>
+                    <Label>Content</Label>
+                    <Textarea 
+                      value={prompt.content}
+                      onChange={(e) => {
+                        const newPrompts = [...prompts]
+                        newPrompts[index].content = e.target.value
+                        setPrompts(newPrompts)
+                      }}
+                      className="font-mono text-sm min-h-[100px]"
+                    />
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 
@@ -75,24 +211,6 @@ export default function CreateAIAPage() {
                     <Label htmlFor={ability.id}>{ability.title}</Label>
                     <p className="text-sm text-muted-foreground">
                       {ability.description}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Permissions */}
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold">Permissions</h2>
-            <div className="grid gap-4">
-              {permissions.map((permission) => (
-                <div key={permission.id} className="flex items-start space-x-3">
-                  <Checkbox id={permission.id} />
-                  <div className="grid gap-1.5 leading-none">
-                    <Label htmlFor={permission.id}>{permission.name}</Label>
-                    <p className="text-sm text-muted-foreground">
-                      {permission.description}
                     </p>
                   </div>
                 </div>
