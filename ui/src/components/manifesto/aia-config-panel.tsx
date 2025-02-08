@@ -26,8 +26,8 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog"
+import { useAIAStore } from "@/lib/store/aia"
 
 interface AIA {
   id: string
@@ -35,7 +35,7 @@ interface AIA {
   emoji: string
   permissions: string[]
   weight: number
-  type: "internal" | "public"
+  type: "Internal" | "Public"
 }
 
 const availablePermissions = [
@@ -45,15 +45,6 @@ const availablePermissions = [
   "manage_members",
   "manage_treasury",
   "manage_settings"
-]
-
-const availableAIAs: AIA[] = [
-  { id: "gpt4", role: "GPT-4", emoji: "🤖", permissions: ["propose", "vote"], weight: 1, type: "internal" },
-  { id: "claude", role: "Claude", emoji: "🧠", permissions: ["propose", "vote"], weight: 1, type: "internal" },
-  { id: "llama", role: "Llama", emoji: "🦙", permissions: ["propose"], weight: 1, type: "public" },
-  { id: "palm", role: "PaLM", emoji: "🌴", permissions: ["propose"], weight: 1, type: "public" },
-  { id: "gemini", role: "Gemini", emoji: "👾", permissions: ["propose", "vote"], weight: 1, type: "internal" },
-  { id: "mistral", role: "Mistral", emoji: "🌪️", permissions: ["propose"], weight: 1, type: "public" }
 ]
 
 const initialNodes: Node[] = [
@@ -77,12 +68,11 @@ const initialNodes: Node[] = [
     },
   },
 ]
-const initialEdges: Edge[] = []
 
 export default function AIAConfigPanel() {
-  const [selectedAIAs, setSelectedAIAs] = useState<AIA[]>([])
+  const { aias } = useAIAStore()
   const [nodes, setNodes] = useState<Node[]>(initialNodes)
-  const [edges, setEdges] = useState<Edge[]>(initialEdges)
+  const [edges, setEdges] = useState<Edge[]>([])
   const [addDialogOpen, setAddDialogOpen] = useState(false)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [selectedAIA, setSelectedAIA] = useState<AIA | null>(null)
@@ -124,9 +114,9 @@ export default function AIAConfigPanel() {
         aia: newAIA
       },
       style: {
-        background: aia.type === "internal" ? "#e3f2fd" : "#f1f8e9",
+        background: aia.type === "Internal" ? "#e3f2fd" : "#f1f8e9",
         border: "1px solid",
-        borderColor: aia.type === "internal" ? "#90caf9" : "#a5d6a7",
+        borderColor: aia.type === "Internal" ? "#90caf9" : "#a5d6a7",
         borderRadius: "8px",
         padding: "4px",
       },
@@ -174,7 +164,7 @@ export default function AIAConfigPanel() {
   const toggleAIAType = (id: string) => {
     setNodes(prev => prev.map(node => {
       if (node.id === id && node.data.aia) {
-        const newType = node.data.aia.type === "internal" ? "public" : "internal"
+        const newType = node.data.aia.type === "Internal" ? "Public" : "Internal"
         return {
           ...node,
           data: {
@@ -183,30 +173,14 @@ export default function AIAConfigPanel() {
           },
           style: {
             ...node.style,
-            background: newType === "internal" ? "#e3f2fd" : "#f1f8e9",
-            borderColor: newType === "internal" ? "#90caf9" : "#a5d6a7",
+            background: newType === "Internal" ? "#e3f2fd" : "#f1f8e9",
+            borderColor: newType === "Internal" ? "#90caf9" : "#a5d6a7",
           },
         }
       }
       return node
     }))
   }
-
-  const onPaneClick = useCallback((event: React.MouseEvent) => {
-    const reactFlowBounds = (event.target as HTMLElement).closest('.react-flow')?.getBoundingClientRect()
-    const reactFlowInstance = document.querySelector('.react-flow')
-    if (reactFlowBounds && reactFlowInstance) {
-      const scale = reactFlowInstance.style.transform 
-        ? parseFloat(reactFlowInstance.style.transform.match(/scale\((.*?)\)/)?.[1] || "1")
-        : 1
-      const position = {
-        x: (event.clientX - reactFlowBounds.left) / scale,
-        y: (event.clientY - reactFlowBounds.top) / scale,
-      }
-      setSelectedPosition(position)
-      setAddDialogOpen(true)
-    }
-  }, [])
 
   const onNodeClick = useCallback((event: React.MouseEvent, node: Node) => {
     if (node.id === 'start') {
@@ -226,7 +200,7 @@ export default function AIAConfigPanel() {
             <DialogTitle>Select an Agent</DialogTitle>
           </DialogHeader>
           <div className="grid grid-cols-2 gap-4 pt-4">
-            {availableAIAs.map((aia) => {
+            {aias.map((aia) => {
               const isSelected = nodes.some(node => node.id === aia.id)
               return (
                 <Button
@@ -236,14 +210,21 @@ export default function AIAConfigPanel() {
                     "h-auto py-4 px-4 flex flex-col items-center gap-2 relative",
                     isSelected && "opacity-50"
                   )}
-                  onClick={() => !isSelected && handleAddAIA(aia)}
+                  onClick={() => !isSelected && handleAddAIA({
+                    id: aia.id,
+                    role: aia.role,
+                    emoji: aia.emoji || "🤖",
+                    permissions: [],
+                    weight: 1,
+                    type: aia.type as "Internal" | "Public"
+                  })}
                   disabled={isSelected}
                 >
-                  <span className="text-2xl">{aia.emoji}</span>
+                  <span className="text-2xl">{aia.emoji || "🤖"}</span>
                   <span>{aia.role}</span>
                   <span className={cn(
                     "absolute top-2 right-2 text-xs px-2 py-1 rounded-full text-white",
-                    aia.type === "internal" ? "bg-blue-500" : "bg-green-500"
+                    aia.type === "Internal" ? "bg-blue-500" : "bg-green-500"
                   )}>
                     {aia.type}
                   </span>
@@ -272,7 +253,7 @@ export default function AIAConfigPanel() {
                       onClick={() => toggleAIAType(selectedAIA.id)}
                       className={cn(
                         "mt-1 text-xs h-6 px-2",
-                        selectedAIA.type === "internal" ? "text-blue-500" : "text-green-500"
+                        selectedAIA.type === "Internal" ? "text-blue-500" : "text-green-500"
                       )}
                     >
                       {selectedAIA.type}
@@ -326,7 +307,18 @@ export default function AIAConfigPanel() {
       <div className="space-y-4">
         <div className="flex justify-between items-center">
           <h3 className="text-lg font-semibold">Agent Flow Diagram</h3>
-          <Button variant="outline" size="sm" onClick={onPaneClick}>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => {
+              const center = {
+                x: 200,
+                y: Math.max(...nodes.map(n => n.position.y)) + 100
+              }
+              setSelectedPosition(center)
+              setAddDialogOpen(true)
+            }}
+          >
             <Plus className="h-4 w-4 mr-2" />
             Add Agent
           </Button>
@@ -339,7 +331,6 @@ export default function AIAConfigPanel() {
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
             connectionMode={ConnectionMode.Loose}
-            onPaneClick={onPaneClick}
             onNodeClick={onNodeClick}
             fitView
           >
@@ -348,7 +339,7 @@ export default function AIAConfigPanel() {
           </ReactFlow>
         </div>
         <p className="text-sm text-muted-foreground">
-          Click anywhere on the canvas or use the Add Agent button to add new agents. Click on an agent to edit its properties. Connect agents by dragging from one node to another.
+          Use the Add Agent button to add new agents. Click on an agent to edit its properties. Connect agents by dragging from one node to another.
         </p>
       </div>
     </div>
