@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils"
 import { useAIAStore } from "@/lib/store/aia"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+import { useToast } from "@/hooks/use-toast"
 
 interface PageProps {
   params: Promise<{
@@ -18,6 +19,7 @@ export default function AIADetailPage({ params }: PageProps) {
   const { id } = use(params)
   const { getAIAById, abilities } = useAIAStore()
   const aia = getAIAById(id)
+  const { toast } = useToast()
 
   if (!aia) {
     return <div>AIA not found</div>
@@ -27,12 +29,22 @@ export default function AIADetailPage({ params }: PageProps) {
     <div className="container mx-auto py-10">
       {/* Header */}
       <div className="space-y-6">
-        <div className="flex items-center gap-4">
-          <span className="text-4xl">{aia.emoji || "🤖"}</span>
-          <div>
-            <h1 className="text-2xl font-bold">{aia.role}</h1>
-            <p className="text-muted-foreground">{aia.type} AIA</p>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <span className="text-4xl">{aia.emoji || "🤖"}</span>
+            <div>
+              <h1 className="text-2xl font-bold">{aia.role}</h1>
+              <p className="text-muted-foreground">{aia.type} AIA</p>
+            </div>
           </div>
+          <Button variant="outline" onClick={() => {
+        toast({
+          title: "Not Available",
+          description: "Sorry, this feature is not available yet.",
+        })
+      }}>
+            Edit
+          </Button>
         </div>
 
         <div className="space-y-4">
