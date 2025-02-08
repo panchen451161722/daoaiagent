@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -8,6 +8,17 @@ import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import AIAConfigPanel from "./aia-config-panel"
 import ProcessConfig from "./process-config"
+
+interface AIAConfig {
+  id: string
+  role: string
+  emoji: string
+  permissions: string[]
+  weight: number
+  type: "Internal" | "Public"
+  prompts: string[]
+  nexts: string[]
+}
 
 export default function ManifestoForm() {
   const [formData, setFormData] = useState({
@@ -20,9 +31,15 @@ export default function ManifestoForm() {
     allowIndependentAIA: false
   })
 
+  const [agents, setAgents] = useState<AIAConfig[]>([])
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    console.log("Form submitted:", formData)
+    const manifestoData = {
+      ...formData,
+      agents
+    }
+    console.log("Form submitted:", manifestoData)
   }
 
   const emojis = ["🌟", "🚀", "🌈", "🎯", "🔮", "⚡️", "🎨", "🌍", "💫", "🎭", "🦋", "🎪"]
@@ -143,7 +160,7 @@ export default function ManifestoForm() {
       {/* AIA Configuration */}
       <div className="space-y-4">
         <h2 className="text-2xl font-bold">AIA Configuration</h2>
-        <AIAConfigPanel />
+        <AIAConfigPanel onDiagramChange={({ agents }) => setAgents(agents)} />
       </div>
 
       {/* Process Configuration */}

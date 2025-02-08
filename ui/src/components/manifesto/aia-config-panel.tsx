@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useEffect } from "react"
 import ReactFlow, {
   Node,
   Edge,
@@ -16,9 +16,6 @@ import ReactFlow, {
   applyEdgeChanges,
 } from 'reactflow'
 import 'reactflow/dist/style.css'
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Checkbox } from "@/components/ui/checkbox"
 import { X, Plus } from "lucide-react"
 import { cn } from "@/lib/utils"
 import {
@@ -36,6 +33,8 @@ interface AIA {
   permissions: string[]
   weight: number
   type: "Internal" | "Public"
+  prompts: string[]
+  nexts: string[]
 }
 
 const availablePermissions = [
@@ -69,14 +68,34 @@ const initialNodes: Node[] = [
   },
 ]
 
-export default function AIAConfigPanel() {
+export default function AIAConfigPanel({ 
+  onDiagramChange 
+}: { 
+  onDiagramChange: (data: { agents: AIA[] }) => void 
+}) {
   const { aias } = useAIAStore()
   const [nodes, setNodes] = useState<Node[]>(initialNodes)
   const [edges, setEdges] = useState<Edge[]>([])
+  const [agents, setAgents] = useState<AIA[]>([])
   const [addDialogOpen, setAddDialogOpen] = useState(false)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [selectedAIA, setSelectedAIA] = useState<AIA | null>(null)
   const [selectedPosition, setSelectedPosition] = useState({ x: 0, y: 0 })
+
+  // Update parent when agents change
+  useEffect(() => {
+    onDiagramChange({ agents })
+  }, [agents, onDiagramChange])
+
+  // Convert edges to nexts when they change
+  useEffect(() => {
+    setAgents(prev => prev.map(agent => ({
+      ...agent,
+      nexts: edges
+        .filter(edge => edge.source === agent.id)
+        .map(edge => edge.target)
+    })))
+  }, [edges])
 
   const onNodesChange = useCallback(
     (changes: NodeChange[]) => setNodes((nds) => applyNodeChanges(changes, nds)),
@@ -97,13 +116,16 @@ export default function AIAConfigPanel() {
     []
   )
 
-  const handleAddAIA = (aia: AIA) => {
-    const newAIA = { ...aia }
+  const handleAddAIA = (aia: Omit<AIA, 'nexts'>) => {
+    const newAIA: AIA = { 
+      ...aia,
+      nexts: []
+    }
     
     const newNode: Node = {
       id: aia.id,
       type: 'default',
-      position: selectedPosition,
+      position: { x: 200, y: Math.max(...nodes.map(n => n.position.y)) + 100 },
       data: { 
         label: (
           <div className="flex items-center gap-2 p-2">
@@ -122,64 +144,61 @@ export default function AIAConfigPanel() {
       },
     }
     setNodes((nds) => [...nds, newNode])
+    setAgents((prev) => [...prev, newAIA])
     setAddDialogOpen(false)
   }
 
   const handleRemoveAIA = (id: string) => {
     setNodes((nds) => nds.filter(node => node.id !== id))
     setEdges((eds) => eds.filter(edge => edge.source !== id && edge.target !== id))
+    setAgents((prev) => prev.filter(agent => agent.id !== id))
     setEditDialogOpen(false)
   }
 
   const handlePermissionToggle = (aiaId: string, permission: string) => {
-    setNodes(prev => prev.map(node => {
-      if (node.id === aiaId && node.data.aia) {
-        const newPermissions = node.data.aia.permissions.includes(permission)
-          ? node.data.aia.permissions.filter(p => p !== permission)
-          : [...node.data.aia.permissions, permission]
+    setAgents(prev => prev.map(agent => {
+      if (agent.id === aiaId) {
+        const newPermissions = agent.permissions.includes(permission)
+          ? agent.permissions.filter(p => p !== permission)
+          : [...agent.permissions, permission]
         return {
-          ...node,
-          data: {
-            ...node.data,
-            aia: { ...node.data.aia, permissions: newPermissions }
-          }
+          ...agent,
+          permissions: newPermissions
         }
       }
-      return node
+      return agent
     }))
   }
 
   const handleWeightChange = (id: string, weight: number) => {
-    setNodes(prev => prev.map(node => 
-      node.id === id && node.data.aia ? {
-        ...node,
-        data: {
-          ...node.data,
-          aia: { ...node.data.aia, weight }
-        }
-      } : node
+    setAgents(prev => prev.map(agent => 
+      agent.id === id ? {
+        ...agent,
+        weight
+      } : agent
     ))
   }
 
   const toggleAIAType = (id: string) => {
-    setNodes(prev => prev.map(node => {
-      if (node.id === id && node.data.aia) {
-        const newType = node.data.aia.type === "Internal" ? "Public" : "Internal"
+    setAgents(prev => prev.map(agent => {
+      if (agent.id === id) {
+        const newType = agent.type === "Internal" ? "Public" : "Internal"
         return {
-          ...node,
-          data: {
-            ...node.data,
-            aia: { ...node.data.aia, type: newType }
-          },
-          style: {
-            ...node.style,
-            background: newType === "Internal" ? "#e3f2fd" : "#f1f8e9",
-            borderColor: newType === "Internal" ? "#90caf9" : "#a5d6a7",
-          },
+          ...agent,
+          type: newType
         }
       }
-      return node
+      return agent
     }))
+  }
+
+  const handlePromptChange = (id: string, prompts: string[]) => {
+    setAgents(prev => prev.map(agent => 
+      agent.id === id ? {
+        ...agent,
+        prompts
+      } : agent
+    ))
   }
 
   const onNodeClick = useCallback((event: React.MouseEvent, node: Node) => {
@@ -201,13 +220,13 @@ export default function AIAConfigPanel() {
           </DialogHeader>
           <div className="grid grid-cols-2 gap-4 pt-4">
             {aias.map((aia) => {
-              const isSelected = nodes.some(node => node.id === aia.id)
+              const isSelected = agents.some(agent => agent.id === aia.id)
               return (
-                <Button
+                <button
                   key={aia.id}
-                  variant="outline"
+                  type="button"
                   className={cn(
-                    "h-auto py-4 px-4 flex flex-col items-center gap-2 relative",
+                    "h-auto py-4 px-4 flex flex-col items-center gap-2 relative border rounded-lg hover:bg-accent",
                     isSelected && "opacity-50"
                   )}
                   onClick={() => !isSelected && handleAddAIA({
@@ -216,7 +235,8 @@ export default function AIAConfigPanel() {
                     emoji: aia.emoji || "🤖",
                     permissions: [],
                     weight: 1,
-                    type: aia.type as "Internal" | "Public"
+                    type: aia.type as "Internal" | "Public",
+                    prompts: aia.prompts || []
                   })}
                   disabled={isSelected}
                 >
@@ -228,7 +248,7 @@ export default function AIAConfigPanel() {
                   )}>
                     {aia.type}
                   </span>
-                </Button>
+                </button>
               )
             })}
           </div>
@@ -236,7 +256,7 @@ export default function AIAConfigPanel() {
       </Dialog>
 
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-3xl">
           <DialogHeader>
             <DialogTitle>Edit Agent Properties</DialogTitle>
           </DialogHeader>
@@ -247,57 +267,62 @@ export default function AIAConfigPanel() {
                   <span className="text-2xl">{selectedAIA.emoji}</span>
                   <div>
                     <h4 className="font-semibold">{selectedAIA.role}</h4>
-                    <Button
-                      variant="ghost"
-                      size="sm"
+                    <button
+                      type="button"
                       onClick={() => toggleAIAType(selectedAIA.id)}
                       className={cn(
-                        "mt-1 text-xs h-6 px-2",
+                        "mt-1 text-xs h-6 px-2 rounded border",
                         selectedAIA.type === "Internal" ? "text-blue-500" : "text-green-500"
                       )}
                     >
                       {selectedAIA.type}
-                    </Button>
+                    </button>
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2">
                     <span className="text-sm text-muted-foreground">Weight:</span>
-                    <Input
+                    <input
                       type="number"
                       value={selectedAIA.weight}
                       onChange={(e) => handleWeightChange(selectedAIA.id, Number(e.target.value))}
-                      className="w-20"
+                      className="w-20 px-2 py-1 border rounded"
                       min={0}
                       max={10}
                     />
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
+                  <button
+                    type="button"
                     onClick={() => handleRemoveAIA(selectedAIA.id)}
-                    className="text-muted-foreground hover:text-foreground"
+                    className="text-muted-foreground hover:text-foreground p-2"
                   >
                     <X className="h-4 w-4" />
-                  </Button>
+                  </button>
                 </div>
               </div>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {availablePermissions.map((permission) => (
-                  <div key={permission} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`${selectedAIA.id}-${permission}`}
-                      checked={selectedAIA.permissions.includes(permission)}
-                      onCheckedChange={() => handlePermissionToggle(selectedAIA.id, permission)}
-                    />
-                    <label
-                      htmlFor={`${selectedAIA.id}-${permission}`}
-                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                    >
-                      {permission.split("_").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" ")}
-                    </label>
-                  </div>
-                ))}
+
+              {/* Permissions */}
+              <div>
+                <label className="text-sm font-medium">Permissions</label>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-2">
+                  {availablePermissions.map((permission) => (
+                    <div key={permission} className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id={`${selectedAIA.id}-${permission}`}
+                        checked={selectedAIA.permissions.includes(permission)}
+                        onChange={() => handlePermissionToggle(selectedAIA.id, permission)}
+                        className="rounded border-gray-300"
+                      />
+                      <label
+                        htmlFor={`${selectedAIA.id}-${permission}`}
+                        className="text-sm font-medium"
+                      >
+                        {permission.split("_").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" ")}
+                      </label>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           )}
@@ -307,9 +332,9 @@ export default function AIAConfigPanel() {
       <div className="space-y-4">
         <div className="flex justify-between items-center">
           <h3 className="text-lg font-semibold">Agent Flow Diagram</h3>
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <button 
+            type="button"
+            className="px-4 py-2 border rounded hover:bg-accent text-sm"
             onClick={() => {
               const center = {
                 x: 200,
@@ -321,7 +346,7 @@ export default function AIAConfigPanel() {
           >
             <Plus className="h-4 w-4 mr-2" />
             Add Agent
-          </Button>
+          </button>
         </div>
         <div className="border rounded-lg" style={{ height: '400px' }}>
           <ReactFlow
