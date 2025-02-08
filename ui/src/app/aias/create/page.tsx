@@ -70,8 +70,9 @@ export default function CreateAIAPage() {
               <div>
                 <Label>Type</Label>
                 <ToggleGroup type="single" value={type} onValueChange={(value) => value && setType(value)} className="justify-start mt-2">
-                  <ToggleGroupItem value="Internal">Internal</ToggleGroupItem>
-                  <ToggleGroupItem value="Public">Public</ToggleGroupItem>
+                  <ToggleGroupItem value="Internal">🔒 Internal</ToggleGroupItem>
+                  <ToggleGroupItem value="Public">🌎 Public</ToggleGroupItem>
+                  <ToggleGroupItem value="Individual">👤 Individual</ToggleGroupItem>
                 </ToggleGroup>
               </div>
             </div>
