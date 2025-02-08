@@ -1,189 +1,126 @@
-import { Metadata } from "next"
+"use client"
+
+import { use } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-
-export const metadata: Metadata = {
-  title: "AIA Details",
-  description: "View AIA details and activities",
-}
-
-const allPermissions = [
-  {
-    id: "create_proposal",
-    name: "Create Proposals",
-    description: "Can create new proposals in the DAO"
-  },
-  {
-    id: "review_proposal",
-    name: "Review Proposals",
-    description: "Can review and comment on proposals"
-  },
-  {
-    id: "vote_proposal",
-    name: "Vote on Proposals",
-    description: "Can cast votes on proposals"
-  },
-  {
-    id: "execute_proposal",
-    name: "Execute Proposals",
-    description: "Can execute approved proposals"
-  },
-  {
-    id: "manage_members",
-    name: "Manage Members",
-    description: "Can add or remove DAO members"
-  },
-  {
-    id: "manage_funds",
-    name: "Manage Funds",
-    description: "Can manage DAO treasury and funds"
-  },
-  {
-    id: "create_meeting",
-    name: "Create Meetings",
-    description: "Can schedule and create new meetings"
-  },
-  {
-    id: "moderate_discussion",
-    name: "Moderate Discussions",
-    description: "Can moderate DAO discussions and forums"
-  }
-]
-
-const mockAIADetails = {
-  id: "1",
-  role: "Proposal Coordinator",
-  type: "Internal",
-  description: "Coordinates proposal reviews and voting processes",
-  permissions: [
-    "create_proposal",
-    "review_proposal",
-    "create_meeting",
-    "moderate_discussion"
-  ],
-  recentActivities: [
-    {
-      id: "act1",
-      date: "2024-01-30",
-      daoName: "DeFi DAO",
-      action: "Coordinated governance model review",
-      status: "Completed"
-    },
-    {
-      id: "act2",
-      date: "2024-01-29",
-      daoName: "NFT Creators",
-      action: "Initiated proposal review process",
-      status: "In Progress"
-    },
-    {
-      id: "act3",
-      date: "2024-01-28",
-      daoName: "Gaming Guild",
-      action: "Updated proposal status",
-      status: "Completed"
-    }
-  ],
-  stats: {
-    activeDAOs: 3,
-    totalMeetings: 45,
-    proposalsCoordinated: 28,
-    successRate: "92%"
-  }
-}
+import { useAIAStore } from "@/lib/store/aia"
+import { Badge } from "@/components/ui/badge"
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 
 interface PageProps {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
-export default function AIADetailsPage({ params }: PageProps) {
+export default function AIADetailPage({ params }: PageProps) {
+  const { id } = use(params)
+  const { getAIAById, abilities } = useAIAStore()
+  const aia = getAIAById(id)
+
+  if (!aia) {
+    return <div>AIA not found</div>
+  }
+
   return (
     <div className="container mx-auto py-10">
-      <div className="space-y-8">
-        {/* Header */}
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <h1 className="text-3xl font-bold">{mockAIADetails.role}</h1>
-            <span className={cn(
-              "px-2 py-0.5 rounded-full text-xs",
-              mockAIADetails.type === "Internal"
-                ? "bg-blue-100 text-blue-700"
-                : "bg-green-100 text-green-700"
-            )}>
-              {mockAIADetails.type}
-            </span>
-          </div>
-          <p className="text-muted-foreground">{mockAIADetails.description}</p>
-        </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-4 gap-4">
-          {Object.entries(mockAIADetails.stats).map(([key, value]) => (
-            <div key={key} className="bg-secondary/50 rounded-lg p-4">
-              <p className="text-sm text-muted-foreground capitalize">
-                {key.replace(/([A-Z])/g, " $1").trim()}
-              </p>
-              <p className="text-2xl font-bold">{value}</p>
-            </div>
-          ))}
-        </div>
-
-        {/* Permissions */}
-        <div>
-          <h2 className="text-xl font-semibold mb-4">Permissions</h2>
-          <div className="grid grid-cols-2 gap-2">
-            {allPermissions.map((permission) => (
-              <div key={permission.id} className="bg-secondary/30 rounded-lg p-3 flex items-center gap-2">
-                {mockAIADetails.permissions.includes(permission.id) ? (
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-700" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                ) : (
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2a1 1 0 00.293.707l2 2a1 1 0 001.414 0l2-2a1 1 0 00.293-.707V7a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 00.293.707l-2 2a1 1 0 00-1.414 0l-2-2a1 1 0 00-.293-.707V7z" clipRule="evenodd" />
-                  </svg>
-                )}
-                <span>{permission.name}</span>
-              </div>
-            ))}
+      {/* Header */}
+      <div className="space-y-6">
+        <div className="flex items-center gap-4">
+          <span className="text-4xl">{aia.emoji || "🤖"}</span>
+          <div>
+            <h1 className="text-2xl font-bold">{aia.role}</h1>
+            <p className="text-muted-foreground">{aia.type} AIA</p>
           </div>
         </div>
 
-        {/* Recent Activities */}
-        <div>
-          <h2 className="text-xl font-semibold mb-4">Recent Activities</h2>
-          <div className="space-y-4">
-            {mockAIADetails.recentActivities.map((activity) => (
-              <div key={activity.id} className="border rounded-lg p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-muted-foreground">
-                      {activity.date}
-                    </span>
-                    <span>•</span>
-                    <Link 
-                      href={`/daos/${activity.daoName.toLowerCase().replace(" ", "-")}`}
-                      className="text-sm hover:underline"
-                    >
-                      {activity.daoName}
-                    </Link>
+        <div className="space-y-4">
+          <div>
+            <h2 className="text-lg font-semibold mb-2">Description</h2>
+            <p className="text-muted-foreground">{aia.description}</p>
+          </div>
+
+          <div>
+            <h2 className="text-lg font-semibold mb-2">Prompts</h2>
+            <div className="space-y-4">
+              {aia.prompts.map((prompt, index) => (
+                <div key={index} className="border rounded-lg p-4 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Badge>{prompt.type}</Badge>
+                    {prompt.description && (
+                      <span className="text-sm text-muted-foreground">
+                        {prompt.description}
+                      </span>
+                    )}
                   </div>
-                  <span className={cn(
-                    "px-2 py-0.5 rounded-full text-xs",
-                    {
-                      "bg-green-100 text-green-700": activity.status === "Completed",
-                      "bg-yellow-100 text-yellow-700": activity.status === "In Progress"
-                    }
-                  )}>
-                    {activity.status}
-                  </span>
+                  <pre className="bg-muted p-4 rounded-lg overflow-auto text-sm">
+                    {prompt.content}
+                  </pre>
                 </div>
-                <p className="text-sm">{activity.action}</p>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <h2 className="text-lg font-semibold mb-2">Abilities</h2>
+            <div className="grid gap-4 md:grid-cols-2">
+              {abilities.map(ability => (
+                <div key={ability.id} className="border rounded-lg p-4">
+                  <h3 className="font-medium">{ability.title}</h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {ability.description}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {aia.recentActivities && (
+            <div>
+              <h2 className="text-lg font-semibold mb-2">Recent Activities</h2>
+              <div className="space-y-4">
+                {aia.recentActivities.map((activity) => (
+                  <div
+                    key={activity.id}
+                    className="flex items-center justify-between p-4 rounded-lg border"
+                  >
+                    <div>
+                      <p className="font-medium">{activity.action}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {activity.daoName} • {activity.date}
+                      </p>
+                    </div>
+                    <Badge variant={activity.status === "Completed" ? "default" : "secondary"}>
+                      {activity.status}
+                    </Badge>
+                  </div>
+                ))}
               </div>
-            ))}
+            </div>
+          )}
+
+          <div className="grid grid-cols-2 gap-4">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">
+                  Active DAOs
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{aia.activeDAOs}</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">
+                  Total Meetings
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{aia.totalMeetings}</div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>

@@ -40,27 +40,37 @@ export function ProposalDetail({ proposal }: ProposalDetailProps) {
         <div>
           <div className="text-sm text-muted-foreground mb-1">Proposer</div>
           <div className="flex items-center gap-2">
-            <span className="text-xl">{proposal.creator.avatar}</span>
+            {proposal.creator.avatar && (
+              <span className="text-xl">{proposal.creator.avatar}</span>
+            )}
             <span className="font-medium">{proposal.creator.name}</span>
           </div>
         </div>
-        <div>
-          <div className="text-sm text-muted-foreground mb-1">Beneficiary</div>
-          <div className="flex items-center gap-2">
-            <span className="text-xl">{proposal.beneficiary.avatar}</span>
-            <span className="font-medium">{proposal.beneficiary.name}</span>
+        {proposal.beneficiary && (
+          <div>
+            <div className="text-sm text-muted-foreground mb-1">Beneficiary</div>
+            <div className="flex items-center gap-2">
+              {proposal.beneficiary.avatar && (
+                <span className="text-xl">{proposal.beneficiary.avatar}</span>
+              )}
+              <span className="font-medium">{proposal.beneficiary.name}</span>
+            </div>
           </div>
-        </div>
-        <div>
-          <div className="text-sm text-muted-foreground mb-1">Funding Amount</div>
-          <div className="font-medium">
-            {proposal.funding.amount.toLocaleString()} {proposal.funding.currency}
-          </div>
-        </div>
-        <div>
-          <div className="text-sm text-muted-foreground mb-1">Release Percentage</div>
-          <div className="font-medium">{proposal.funding.releasePercentage}%</div>
-        </div>
+        )}
+        {proposal.funding && (
+          <>
+            <div>
+              <div className="text-sm text-muted-foreground mb-1">Funding Amount</div>
+              <div className="font-medium">
+                {proposal.funding.amount.toLocaleString()} {proposal.funding.currency}
+              </div>
+            </div>
+            <div>
+              <div className="text-sm text-muted-foreground mb-1">Release Percentage</div>
+              <div className="font-medium">{proposal.funding.releasePercentage}%</div>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Tabs */}
@@ -71,79 +81,79 @@ export function ProposalDetail({ proposal }: ProposalDetailProps) {
         </TabsList>
         
         <TabsContent value="details" className="space-y-8">
-          <section>
-            <h2 className="text-xl font-semibold mb-2">Summary</h2>
-            <p className="text-muted-foreground">{proposal.summary}</p>
-          </section>
+          {proposal.summary && (
+            <section>
+              <h2 className="text-xl font-semibold mb-2">Summary</h2>
+              <p className="text-muted-foreground">{proposal.summary}</p>
+            </section>
+          )}
 
-          <section>
-            <h2 className="text-xl font-semibold mb-2">Details</h2>
-            <div className="prose max-w-none">
-              {proposal.details.split("\n").map((paragraph: string, index: number) => (
-                <p key={index} className="text-muted-foreground">
-                  {paragraph}
-                </p>
-              ))}
-            </div>
-          </section>
+          {proposal.details && (
+            <section>
+              <h2 className="text-xl font-semibold mb-2">Details</h2>
+              <div className="prose max-w-none">
+                {proposal.details.split("\n").map((paragraph: string, index: number) => (
+                  <p key={index} className="text-muted-foreground">
+                    {paragraph}
+                  </p>
+                ))}
+              </div>
+            </section>
+          )}
 
-          <section>
-            <h2 className="text-xl font-semibold mb-2">Funding Plan</h2>
-            <div className="prose max-w-none">
-              {proposal.fundingPlan.split("\n").map((line: string, index: number) => (
-                <p key={index} className="text-muted-foreground">
-                  {line}
-                </p>
-              ))}
-            </div>
-          </section>
+          {proposal.fundingPlan && (
+            <section>
+              <h2 className="text-xl font-semibold mb-2">Funding Plan</h2>
+              <div className="prose max-w-none">
+                {proposal.fundingPlan.split("\n").map((line: string, index: number) => (
+                  <p key={index} className="text-muted-foreground">
+                    {line}
+                  </p>
+                ))}
+              </div>
+            </section>
+          )}
 
-          <section>
-            <h2 className="text-xl font-semibold mb-2">Expected Outcome</h2>
-            <div className="prose max-w-none">
-              {proposal.expectedOutcome.split("\n").map((line: string, index: number) => (
-                <p key={index} className="text-muted-foreground">
-                  {line}
-                </p>
-              ))}
-            </div>
-          </section>
+          {proposal.expectedOutcome && (
+            <section>
+              <h2 className="text-xl font-semibold mb-2">Expected Outcome</h2>
+              <div className="prose max-w-none">
+                {proposal.expectedOutcome.split("\n").map((line: string, index: number) => (
+                  <p key={index} className="text-muted-foreground">
+                    {line}
+                  </p>
+                ))}
+              </div>
+            </section>
+          )}
         </TabsContent>
 
         <TabsContent value="history">
-          <div className="space-y-4">
-            {proposal.history.map((event: any) => (
-              <div key={event.id} className="border rounded-lg p-4">
-                <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-semibold">{event.title}</h3>
-                      <span className="text-sm text-muted-foreground">•</span>
-                      <span className="text-sm text-muted-foreground">{event.date}</span>
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-1">{event.description}</p>
+          {proposal.history && proposal.history.length > 0 ? (
+            <div className="space-y-4">
+              {proposal.history.map((item) => (
+                <div key={item.id} className="flex gap-4">
+                  <div className="w-1/4">
+                    <div className="text-sm text-muted-foreground">{item.date}</div>
                   </div>
-                  {event.type === 'meeting' && (
-                    <Link href={`/meetings/${event.meetingId}`}>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-primary"
+                  <div className="flex-1">
+                    <div className="font-medium">{item.title}</div>
+                    <div className="text-sm text-muted-foreground">{item.description}</div>
+                    {item.type === "meeting" && (
+                      <Link
+                        href={`/proposals/${proposal.id}/meetings/${item.meetingId}`}
+                        className="text-sm text-primary hover:underline"
                       >
-                        View Meeting
-                      </Button>
-                    </Link>
-                  )}
-                </div>
-                {event.type === 'meeting' && (
-                  <div className="mt-2 text-sm">
-                    <span className="text-muted-foreground">Participants: </span>
-                    {event.participants.join(", ")}
+                        View Meeting Details
+                      </Link>
+                    )}
                   </div>
-                )}
-              </div>
-            ))}
-          </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-muted-foreground">No history available</div>
+          )}
         </TabsContent>
       </Tabs>
     </div>

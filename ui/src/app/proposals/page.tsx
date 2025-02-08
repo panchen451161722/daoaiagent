@@ -1,12 +1,8 @@
-import { Metadata } from "next"
+"use client"
+
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import ProposalList from "@/components/proposals/proposal-list"
-
-export const metadata: Metadata = {
-  title: "Proposals",
-  description: "View and manage DAO proposals",
-}
 
 export default function ProposalsPage() {
   return (
@@ -16,9 +12,6 @@ export default function ProposalsPage() {
           <h1 className="text-3xl font-bold">Proposals</h1>
           <p className="text-muted-foreground">View and manage DAO proposals</p>
         </div>
-        <Link href="/proposals/create">
-          <Button>Create Proposal</Button>
-        </Link>
       </div>
       <ProposalList />
     </div>
