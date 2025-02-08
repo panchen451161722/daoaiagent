@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -15,64 +15,79 @@ interface ProcessConfig {
   }
 }
 
-interface ProcessConfigs {
+export interface ProcessConfigs {
   [key: string]: ProcessConfig
 }
 
-export default function ProcessConfig() {
-  const [processes, setProcesses] = useState<ProcessConfigs>({
-    proposal: {
-      enabled: true,
-      params: {
-        proposalPeriod: 7,
-        votingPeriod: 3,
-        executionDelay: 1
-      }
-    },
-    internal: {
-      enabled: true,
-      params: {
-        proposalPeriod: 3,
-        votingPeriod: 2,
-        executionDelay: 1
-      }
-    },
-    emergency: {
-      enabled: true,
-      params: {
-        emergencyDelay: 1
-      }
-    },
-    upgrade: {
-      enabled: true,
-      params: {
-        votingPeriod: 5,
-        executionDelay: 2
-      }
+const defaultProcesses: ProcessConfigs = {
+  proposal: {
+    enabled: true,
+    params: {
+      proposalPeriod: 7,
+      votingPeriod: 3,
+      executionDelay: 1
     }
-  })
+  },
+  internal: {
+    enabled: true,
+    params: {
+      proposalPeriod: 3,
+      votingPeriod: 2,
+      executionDelay: 1
+    }
+  },
+  emergency: {
+    enabled: true,
+    params: {
+      emergencyDelay: 1
+    }
+  },
+  upgrade: {
+    enabled: true,
+    params: {
+      votingPeriod: 5,
+      executionDelay: 2
+    }
+  }
+}
+
+export default function ProcessConfig({ 
+  onChange 
+}: { 
+  onChange: (processes: ProcessConfigs) => void 
+}) {
+  const [processes, setProcesses] = useState<ProcessConfigs>(defaultProcesses)
+
+  // Send initial processes
+  useEffect(() => {
+    onChange(processes)
+  }, [])
 
   const handleProcessToggle = (processKey: string, enabled: boolean) => {
-    setProcesses(prev => ({
-      ...prev,
+    const newProcesses = {
+      ...processes,
       [processKey]: {
-        ...prev[processKey],
+        ...processes[processKey],
         enabled
       }
-    }))
+    }
+    setProcesses(newProcesses)
+    onChange(newProcesses)
   }
 
   const handleParamChange = (processKey: string, paramKey: string, value: number) => {
-    setProcesses(prev => ({
-      ...prev,
+    const newProcesses = {
+      ...processes,
       [processKey]: {
-        ...prev[processKey],
+        ...processes[processKey],
         params: {
-          ...prev[processKey].params,
+          ...processes[processKey].params,
           [paramKey]: value
         }
       }
-    }))
+    }
+    setProcesses(newProcesses)
+    onChange(newProcesses)
   }
 
   return (

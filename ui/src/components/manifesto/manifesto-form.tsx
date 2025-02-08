@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import AIAConfigPanel from "./aia-config-panel"
-import ProcessConfig from "./process-config"
+import ProcessConfig, { type ProcessConfigs } from "./process-config"
 
 interface AIAConfig {
   id: string
@@ -32,12 +32,14 @@ export default function ManifestoForm() {
   })
 
   const [agents, setAgents] = useState<AIAConfig[]>([])
+  const [processes, setProcesses] = useState<ProcessConfigs>()
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     const manifestoData = {
       ...formData,
-      agents
+      agents,
+      processes
     }
     console.log("Form submitted:", manifestoData)
   }
@@ -166,7 +168,7 @@ export default function ManifestoForm() {
       {/* Process Configuration */}
       <div className="space-y-4">
         <h2 className="text-2xl font-bold">Process Configuration</h2>
-        <ProcessConfig />
+        <ProcessConfig onChange={setProcesses} />
       </div>
 
       {/* Form Actions */}
