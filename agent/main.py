@@ -81,10 +81,10 @@ class BaseAgent:
         self.role = role
         self.description = description
         self.llm = ChatOpenAI(
-            model=os.getenv("MODEL"),
+            model=os.getenv("LLM_MODEL"),
             temperature=0,
-            base_url=os.getenv("BASE_URL"),
-            api_key=os.getenv("OPENAI_API_KEY"),
+            base_url=os.getenv("LLM_BASE_URL"),
+            api_key=os.getenv("LLM_API_KEY"),
         )
 
     def get_prompt(self, round_num: int, max_rounds: int) -> ChatPromptTemplate:

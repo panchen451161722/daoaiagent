@@ -37,15 +37,10 @@ docker compose up -d --build
 
 ### Environment Variables
 
-Make sure to set these variables in your `.env` file:
+Make sure to set variables in your `.env` file, follow `example.env` for reference.
+
 ```bash
-MODEL=your_model_name
-BASE_URL=your_base_url
-OPENAI_API_KEY=your_api_key
-LANGCHAIN_TRACING_V2=true_or_false
-LANGCHAIN_ENDPOINT=your_langchain_endpoint
-LANGCHAIN_API_KEY=your_langchain_api_key
-LANGCHAIN_PROJECT=your_project_name
+cp example.env .env
 ```
 
 ### API Usage
