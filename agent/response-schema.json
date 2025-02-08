@@ -1,0 +1,54 @@
+{
+    "type": "object",
+    "properties": {
+        "proposal": {
+            "type": "object",
+            "required": true,
+            "properties": {
+                "title": {
+                    "type": "string",
+                    "required": true
+                },
+                "description": {
+                    "type": "string",
+                    "required": true
+                },
+                "amount": {
+                    "type": "number",
+                    "required": true
+                },
+                "additional_context": {
+                    "type": "object",
+                    "required": true
+                }
+            }
+        },
+        "discussion_history": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "required": true
+        },
+        "votes": {
+            "type": "object",
+            "required": true
+        },
+        "validation_results": {
+            "type": "object",
+            "required": true
+        },
+        "max_rounds": {
+            "type": "number",
+            "required": true
+        },
+        "final_decision": {
+            "type": "object",
+            "required": true
+        },
+        "vote_counts": {
+            "type": "object",
+            "required": true
+        }
+    }
+}
