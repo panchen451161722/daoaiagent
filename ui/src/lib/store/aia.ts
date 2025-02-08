@@ -33,6 +33,12 @@ interface AIAPrompt {
   description?: string
 }
 
+interface PredefinedPrompt {
+  type: "system" | "human"
+  description: string
+  content: string
+}
+
 interface AIA {
   id: string
   role: string
@@ -54,14 +60,18 @@ interface Replacement {
   color: string
 }
 
-const supportedReplacements: Replacement[] = [
+export const supportedReplacements: Replacement[] = [
   { key: "{dao_name}", description: "Name of the DAO", color: "#3b82f6" },
   { key: "{proposal_title}", description: "Title of the proposal", color: "#10b981" },
   { key: "{proposal_content}", description: "Content of the proposal", color: "#8b5cf6" },
-  { key: "{proposal}", description: "Content of the proposal", color: "#8b5cf6" },
+  { key: "{proposal}", description: "The current proposal being reviewed", color: "#8b5cf6" },
   { key: "{voter_address}", description: "Address of the voter", color: "#f59e0b" },
   { key: "{vote_option}", description: "Voting option (yes/no/abstain)", color: "#ef4444" },
   { key: "{vote_reason}", description: "Reason for the vote", color: "#ec4899" },
+  { key: "{discussion_history}", description: "Previous discussions and comments", color: "#06b6d4" },
+  { key: "{votes}", description: "Current votes from committee members", color: "#8b5cf6" },
+  { key: "{approve_count}", description: "Number of approve votes", color: "#22c55e" },
+  { key: "{reject_count}", description: "Number of reject votes", color: "#ef4444" }
 ]
 
 interface AIAStore {
@@ -69,6 +79,24 @@ interface AIAStore {
   abilities: AIAAbility[]
   getAIAById: (id: string) => AIA | undefined
   supportedReplacements: Replacement[]
+}
+
+export const predefinedPrompts: Record<string, PredefinedPrompt> = {
+  "Core Role": {
+    type: "system",
+    description: "Core role definition",
+    content: "You are an AI Agent with specific responsibilities in the DAO governance process."
+  },
+  "Task Template": {
+    type: "human",
+    description: "Basic task template",
+    content: "Review the following:\n{proposal}\n\nProvide your assessment based on your role and responsibilities."
+  },
+  "Vote Template": {
+    type: "human",
+    description: "Voting decision template",
+    content: "Review discussions and votes:\n{discussion_history}\n\nVotes: {votes}\nApprove: {approve_count}\nReject: {reject_count}\n\nProposal: {proposal}"
+  }
 }
 
 export const useAIAStore = create<AIAStore>((set, get) => ({

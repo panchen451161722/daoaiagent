@@ -23,33 +23,7 @@ import {
   ChevronDown, 
   X 
 } from "lucide-react"
-import { useAIAStore } from "@/lib/store/aia"
-
-const predefinedPrompts = {
-  "Core Role": {
-    type: "system",
-    description: "Core role definition",
-    content: "You are an AI Agent with specific responsibilities in the DAO governance process."
-  },
-  "Task Template": {
-    type: "human",
-    description: "Basic task template",
-    content: "Review the following:\n{proposal}\n\nProvide your assessment based on your role and responsibilities."
-  },
-  "Vote Template": {
-    type: "human",
-    description: "Voting decision template",
-    content: "Review discussions and votes:\n{discussion_history}\n\nVotes: {votes}\nApprove: {approve_count}\nReject: {reject_count}\n\nProposal: {proposal}"
-  }
-}
-
-const variableHints = {
-  "{proposal}": "The current proposal being reviewed",
-  "{discussion_history}": "Previous discussions and comments",
-  "{votes}": "Current votes from committee members",
-  "{approve_count}": "Number of approve votes",
-  "{reject_count}": "Number of reject votes"
-}
+import { useAIAStore, predefinedPrompts, supportedReplacements } from "@/lib/store/aia"
 
 export default function CreateAIAPage() {
   const { abilities } = useAIAStore()
@@ -116,9 +90,9 @@ export default function CreateAIAPage() {
                     <div className="space-y-2">
                       <h3 className="font-medium">Available Variables</h3>
                       <div className="space-y-1">
-                        {Object.entries(variableHints).map(([variable, description]) => (
-                          <div key={variable} className="text-sm">
-                            <code className="text-muted-foreground">{variable}</code>
+                        {supportedReplacements.map(({ key, description }) => (
+                          <div key={key} className="text-sm">
+                            <code className="text-muted-foreground">{key}</code>
                             <span className="text-muted-foreground"> - {description}</span>
                           </div>
                         ))}
