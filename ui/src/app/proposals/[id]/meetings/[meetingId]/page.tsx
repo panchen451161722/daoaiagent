@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { cn } from "@/lib/utils"
 import { useDAOStore } from "@/lib/store/dao"
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 
 interface PageProps {
   params: Promise<{
@@ -15,7 +16,8 @@ interface PageProps {
 }
 
 export default function MeetingPage({ params }: PageProps) {
-  const { id, meetingId } = use(params)
+  const resolvedParams = use(params)
+  const { id, meetingId } = resolvedParams
   const { getMeetingById } = useDAOStore()
   const meeting = getMeetingById(meetingId)
 
@@ -55,11 +57,36 @@ export default function MeetingPage({ params }: PageProps) {
           <p className="text-muted-foreground mt-4">{meeting.summary}</p>
         </div>
 
+        {/* Final Decision - Moved to top for significance */}
+        {meeting.finalDecision && (
+          <Card className={cn(
+            "border-2",
+            meeting.finalDecision.decision === "APPROVE" ? "border-green-500" : "border-red-500"
+          )}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                Final Decision
+                <span className={cn(
+                  "px-3 py-1 rounded-full text-sm",
+                  meeting.finalDecision.decision === "APPROVE" 
+                    ? "bg-green-100 text-green-700" 
+                    : "bg-red-100 text-red-700"
+                )}>
+                  {meeting.finalDecision.decision}
+                </span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">{meeting.finalDecision.justification}</p>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Participants */}
         <div>
           <h2 className="text-xl font-semibold mb-4">Participants</h2>
           <div className="grid gap-4">
-            {meeting.participants.map((participant, index) => (
+            {meeting.participants && meeting.participants.map((participant, index) => (
               <div key={index} className="border rounded-lg p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -118,6 +145,58 @@ export default function MeetingPage({ params }: PageProps) {
               ))}
             </div>
           </div>
+        )}
+
+        {/* Discussion History */}
+        {meeting.discussionHistory && meeting.discussionHistory.length > 0 && (
+          <div>
+            <h2 className="text-xl font-semibold mb-4">Discussion History</h2>
+            <div className="space-y-6">
+              {meeting.discussionHistory.map((discussion, index) => {
+                const [prefix, message] = discussion.split(": ")
+                const [round, role] = prefix.split(" - ")
+                return (
+                  <div key={index} className="border rounded-lg p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-sm">
+                        {round}
+                      </span>
+                      <span className="font-medium">{role}</span>
+                    </div>
+                    <p className="text-muted-foreground">{message}</p>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Votes */}
+        {meeting.votes && Object.keys(meeting.votes).length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Committee Votes</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-3">
+                {Object.entries(meeting.votes).map(([role, vote]) => (
+                  <div key={role} className="flex items-center justify-between p-2 border rounded">
+                    <div>
+                      <p className="font-medium">{role}</p>
+                    </div>
+                    <span className={cn(
+                      "px-3 py-1 rounded-full text-sm",
+                      vote === "APPROVE" 
+                        ? "bg-green-100 text-green-700" 
+                        : "bg-red-100 text-red-700"
+                    )}>
+                      {vote}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         )}
 
         {/* Decisions */}

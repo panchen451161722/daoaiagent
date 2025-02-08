@@ -1,18 +1,19 @@
 import { Metadata } from "next"
 
 interface LayoutProps {
-  params: {
+  params: Promise<{
     id: string
     meetingId: string
-  }
+  }>
 }
 
-export const generateMetadata = ({ params }: LayoutProps): Metadata => {
+export async function generateMetadata({ params }: LayoutProps): Promise<Metadata> {
+  const p = await params
   return {
     title: "Meeting Details",
     description: "Meeting details and discussions",
     alternates: {
-      canonical: `/proposals/${params.id}`
+      canonical: `/proposals/${p.id}`
     }
   }
 }

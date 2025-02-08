@@ -108,11 +108,17 @@ export interface Meeting {
   proposalTitle: string
   date: string
   status: 'Scheduled' | 'In Progress' | 'Completed'
-  participants: MeetingParticipant[]
-  summary: string
+  participants?: MeetingParticipant[]
+  summary?: string
   discussion?: DiscussionItem[]
   decisions?: string[]
   nextSteps?: string[]
+  discussionHistory?: string[]
+  finalDecision?: {
+    decision: string
+    justification: string
+  }
+  votes?: Record<string, string>
 }
 
 interface DAOStore {
@@ -335,72 +341,30 @@ const initialMeetings: Meeting[] = [
     proposalTitle: "Talisman - Mobile Wallet Proposal",
     date: "2024-01-30",
     status: "Completed",
-    participants: [
-      {
-        role: "Coordinator",
-        name: "Proposal Coordinator",
-        avatar: "/aia/coordinator.png",
-        address: "0x1234...5678",
-        vote: "Approve",
-        comments: "The proposal aligns with our governance objectives"
-      },
-      {
-        role: "Auditor",
-        name: "Risk Auditor",
-        avatar: "/aia/auditor.png",
-        address: "0x2345...6789",
-        vote: "Approve",
-        comments: "Risk assessment shows acceptable levels"
-      },
-      {
-        role: "Researcher",
-        name: "Technical Researcher",
-        avatar: "/aia/researcher.png",
-        address: "0x3456...7890",
-        vote: "Approve",
-        comments: "Technical implementation appears feasible"
-      }
-    ],
-    summary: "Initial review completed, proceeding to voting phase",
-    discussion: [
-      {
-        speaker: {
-          role: "Coordinator",
-          name: "Proposal Coordinator",
-          avatar: "/aia/coordinator.png"
+    
+        "discussionHistory": [
+            "Round 1 - Financial Controller: The proposed budget of $52,000 should be re-evaluated in light of potential unforeseen expenses, especially considering the multi-phase implementation model which may increase costs if delays occur. Additionally, the reliance on fixed-price engagement might not sufficiently cover complications arising from technical risks during development, necessitating a contingency fund to mitigate these financial impacts.",
+            "Round 1 - Technical Advisor: The proposal's technical risk mitigation heavily relies on established open-source libraries, which could introduce vulnerabilities if not actively maintained or regularly updated. Additionally, the timeline for security audits and testing does not account for potential identification of critical issues that could require significant rework, potentially impacting the entire project schedule.",
+            "Round 1 - Chief Auditor: The proposal lacks clarity on the specific criteria for evaluating the 90% user satisfaction rate post-training, which is critical for measuring the effectiveness of the training program and ensuring compliance with user needs. Furthermore, the defined escalation procedures for incident response should be validated to ensure they align with organizational standards, as inadequate response measures could lead to compliance risks if incidents arise.",
+            "Round 2 - Proposal Coordinator: The proposal should address the scalability of the dashboard, especially considering the expected growth in user engagement beyond the initial three teams mentioned—this could impact system performance and maintenance workload. Additionally, it would be prudent to outline how user feedback from the monthly surveys will be incorporated into ongoing improvements, ensuring that the project remains adaptive to user needs over time.",
+            "Round 2 - Financial Controller: The proposal needs to explicitly outline the criteria for the success metrics related to cost efficiency, particularly how the projected 10% cost reduction in API usage will be achieved and monitored. Additionally, allocating a portion of the budget for unforeseen operational expenses or increased maintenance requirements given the complexity of the dashboard could enhance overall financial risk management.",
+            "Round 2 - Technical Advisor: The proposal should include a formal risk assessment for the security audit phase, particularly regarding the potential delays in identifying security vulnerabilities that may require significant reengineering of the dashboard. Additionally, there should be a clearer plan for updating and maintaining the open-source libraries utilized, as neglecting this could lead to increased technical debt and vulnerabilities over time.",
+            "Round 2 - Chief Auditor: The proposal lacks a comprehensive disaster recovery plan detailing how business continuity will be maintained in the event of a major system failure or data breach. Additionally, it should specify how compliance with emerging regulations on data privacy will be monitored post-implementation, to ensure the solution remains in line with evolving legal obligations.",
+            "Round 3 - Proposal Coordinator: The proposal should explicitly define how training effectiveness will be measured and tied to user satisfaction, ensuring that this aligns with the criteria necessary for compliance and user adoption goals. Additionally, parameters for maintenance and support escalation during the initial three-month post-deployment phase should be detailed further to clarify how responsiveness to user issues and system performance will be managed effectively.",
+            "Round 3 - Financial Controller: The proposal should consider outlining a detailed tracking mechanism for the financial metrics related to the 10% reduction in API costs to ensure transparency and accountability in monitoring these outcomes. Furthermore, given the potential for evolving technical needs, maintaining a flexible budget allocation for iterative development may be prudent in order to adapt to new requirements or challenges as they arise.",
+            "Round 3 - Technical Advisor: The proposal should include a clear strategy for addressing potential compatibility issues with future updates of the underlying LLM APIs, which could impact the dashboard's functionality and require additional development efforts. Furthermore, the methodology for conducting the scheduled security audit needs to ensure that the assessment covers potential threats from external sources, not just compliance with internal standards.",
+            "Round 3 - Chief Auditor: The proposal should include a clear framework for iterative updates based on user feedback and evolving compliance requirements, ensuring the dashboard adapts to both user needs and regulatory changes. Additionally, the approach to technical debt management over the project's lifecycle must be explicitly addressed to prevent vulnerabilities from accumulating due to outdated libraries or integrations.",
+        ],
+        "votes": {
+            "Proposal Coordinator": "APPROVE",
+            "Financial Controller": "APPROVE",
+            "Technical Advisor": "APPROVE",
+            "Chief Auditor": "REJECT",
         },
-        content: "Meeting called to order. Today we will review proposal #123 regarding the new governance model."
-      },
-      {
-        speaker: {
-          role: "Researcher",
-          name: "Technical Researcher",
-          avatar: "/aia/researcher.png"
+        "finalDecision": {
+            "decision": "REJECT",
+            "justification": "The proposal lacks clarity on evaluating success metrics, comprehensive disaster recovery, a detailed tracking mechanism for financial metrics, and strategies for technical debt management. These shortcomings present significant risks to the project, making it unfit for approval.",
         },
-        content: "Based on my analysis, the proposed changes are technically sound and can be implemented within the suggested timeframe."
-      },
-      {
-        speaker: {
-          role: "Auditor",
-          name: "Risk Auditor",
-          avatar: "/aia/auditor.png"
-        },
-        content: "I've reviewed the potential risks. The main concerns are..."
-      },
-      {
-        speaker: {
-          role: "Coordinator",
-          name: "Proposal Coordinator",
-          avatar: "/aia/coordinator.png"
-        },
-        content: "Let's proceed with the voting phase. Please submit your votes with comments."
-      }
-    ],
-    decisions: [
-      "Proposal approved for community voting",
-      "Implementation timeline accepted",
-      "Risk mitigation measures to be documented"
-    ],
     nextSteps: [
       "Prepare community announcement",
       "Set up voting infrastructure",
