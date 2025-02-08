@@ -1,6 +1,6 @@
 "use client"
 
-import { use } from "react"
+import { JSX, use } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -15,9 +15,71 @@ interface PageProps {
   }>
 }
 
+interface HighlightedPromptProps {
+  text: string
+  replacements: Array<{
+    key: string
+    color: string
+  }>
+}
+
+const HighlightedPrompt: React.FC<HighlightedPromptProps> = ({ text, replacements }) => {
+  if (!text) return null;
+  let lastIndex = 0
+  const parts: JSX.Element[] = []
+
+  // Sort replacements by their position in text to handle overlapping matches
+  const matches = replacements.reduce<Array<{ key: string; color: string; index: number }>>((acc, replacement) => {
+    const index = text.indexOf(replacement.key)
+    if (index !== -1) {
+      acc.push({ ...replacement, index })
+    }
+    return acc
+  }, []).sort((a, b) => a.index - b.index)
+
+  matches.forEach((match, i) => {
+    if (match.index > lastIndex) {
+      // Add text before the match
+      parts.push(
+        <span key={`text-${i}`}>
+          {text.substring(lastIndex, match.index)}
+        </span>
+      )
+    }
+    // Add the highlighted replacement
+    parts.push(
+      <span
+        key={`highlight-${i}`}
+        style={{ 
+          backgroundColor: `${match.color}20`,
+          color: match.color,
+          padding: '0.1rem 0.3rem',
+          borderRadius: '0.2rem',
+          margin: '0 0.2rem',
+          fontWeight: 500
+        }}
+      >
+        {match.key}
+      </span>
+    )
+    lastIndex = match.index + match.key.length
+  })
+
+  // Add any remaining text
+  if (lastIndex < text.length) {
+    parts.push(
+      <span key="text-end">
+        {text.substring(lastIndex)}
+      </span>
+    )
+  }
+
+  return <div className="font-mono text-sm whitespace-pre-wrap bg-muted p-5 rounded-lg overflow-auto">{parts}</div>
+}
+
 export default function AIADetailPage({ params }: PageProps) {
   const { id } = use(params)
-  const { getAIAById, abilities } = useAIAStore()
+  const { getAIAById, abilities, supportedReplacements } = useAIAStore()
   const aia = getAIAById(id)
   const { toast } = useToast()
 
@@ -66,9 +128,10 @@ export default function AIADetailPage({ params }: PageProps) {
                       </span>
                     )}
                   </div>
-                  <pre className="bg-muted p-4 rounded-lg overflow-auto text-sm">
-                    {prompt.content}
-                  </pre>
+                  <HighlightedPrompt
+                    text={prompt.content}
+                    replacements={supportedReplacements}
+                  />
                 </div>
               ))}
             </div>

@@ -48,10 +48,27 @@ interface AIA {
   recentActivity?: string
 }
 
+interface Replacement {
+  key: string
+  description: string
+  color: string
+}
+
+const supportedReplacements: Replacement[] = [
+  { key: "{dao_name}", description: "Name of the DAO", color: "#3b82f6" },
+  { key: "{proposal_title}", description: "Title of the proposal", color: "#10b981" },
+  { key: "{proposal_content}", description: "Content of the proposal", color: "#8b5cf6" },
+  { key: "{proposal}", description: "Content of the proposal", color: "#8b5cf6" },
+  { key: "{voter_address}", description: "Address of the voter", color: "#f59e0b" },
+  { key: "{vote_option}", description: "Voting option (yes/no/abstain)", color: "#ef4444" },
+  { key: "{vote_reason}", description: "Reason for the vote", color: "#ec4899" },
+]
+
 interface AIAStore {
   aias: AIA[]
   abilities: AIAAbility[]
   getAIAById: (id: string) => AIA | undefined
+  supportedReplacements: Replacement[]
 }
 
 export const useAIAStore = create<AIAStore>((set, get) => ({
@@ -215,5 +232,6 @@ export const useAIAStore = create<AIAStore>((set, get) => ({
       description: "Analyze community sentiment and facilitate discussions"
     }
   ],
-  getAIAById: (id) => get().aias.find((aia) => aia.id === id)
+  getAIAById: (id) => get().aias.find((aia) => aia.id === id),
+  supportedReplacements
 }))
