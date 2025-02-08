@@ -67,9 +67,9 @@ export function MainNav() {
     <div className="flex items-center space-x-6 lg:space-x-8">
       <Link 
         href="/"
-        className="text-xl font-bold"
+        className="ml-6 text-xl font-bold"
       >
-        DAO AI Agent
+        Civitas AI
       </Link>
       <NavigationMenu>
         <NavigationMenuList>

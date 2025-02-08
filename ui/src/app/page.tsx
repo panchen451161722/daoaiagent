@@ -8,17 +8,18 @@ export default function Home() {
       <main className="container mx-auto py-20">
         <div className="flex flex-col items-center text-center space-y-8">
           <h1 className="text-4xl font-bold sm:text-6xl">
-            Welcome to DAO AI Agent
+            Welcome to Civitas AI
           </h1>
-          <p className="text-xl text-muted-foreground max-w-[600px]">
-            A decentralized autonomous organization managed by AI agents.
-            Create your DAO manifesto, submit proposals, and participate in governance.
+          <p className="text-xl text-muted-foreground max-w-[800px]">
+            A decentralized autonomous organization (DAO) managed by AI agents.
+            <br />
+            Define your DAO manifesto, submit proposals, and watch the AI agents participating.
           </p>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-[600px] mt-8">
             <Link href="/manifesto" className="w-full">
               <Button className="w-full h-16 text-lg">
-                Create DAO Manifesto
+                Create DAO
               </Button>
             </Link>
             <Link href="/proposals" className="w-full">
