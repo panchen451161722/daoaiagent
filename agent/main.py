@@ -26,7 +26,6 @@ class ValidationResult(str, Enum):
     PASS = "PASS"
     FAIL = "FAIL"
 
-
 class FinalDecision(BaseModel):
     decision: Literal["APPROVE", "REJECT"]
     justification: str = Field(description="A brief explanation of the decision")
@@ -57,7 +56,7 @@ class AgentState(TypedDict):
     next_agent: str
     validation_results: Dict[str, Dict[str, Any]]
     max_rounds: int
-    final_decision: FinalDecision
+    final_decision: Dict[str, str]
     vote_counts: Dict[str, int]
 
 
@@ -247,10 +246,10 @@ Otherwise, respect the majority vote decision.
             justification = f"Based on majority vote (Approve: {state['vote_counts']['approve']}, Reject: {state['vote_counts']['reject']})"
             state["final_decision"] = FinalDecision(
                 decision=majority_decision, justification=justification
-            )
+            ).model_dump()
         else:
             # If auditor vetoes, use their decision and justification
-            state["final_decision"] = auditor_decision
+            state["final_decision"] = auditor_decision.model_dump()
 
         return state
 
@@ -407,7 +406,7 @@ class AIAgentCommitee:
             f.write(graph_image.data)
         print("Graph visualization saved!")
 
-    def review_proposal(self, proposal: Proposal) -> Dict[str, Any]:
+    def review_proposal(self, proposal: Proposal) -> AgentState:
         initial_state = AgentState(
             proposal=proposal.to_dict(),
             current_round=1,
@@ -418,20 +417,27 @@ class AIAgentCommitee:
             max_rounds=self.max_rounds,
             final_decision=FinalDecision(
                 decision="REJECT", justification="internal error"
-            ),
+            ).model_dump(),
             vote_counts={"approve": 0, "reject": 0},
         )
 
         last_state = None
-        for state in self.graph.stream(initial_state):
+        for state in self.graph.stream(initial_state, stream_mode="values"):
             last_state = state
 
         return last_state
 
 
 if __name__ == "__main__":
+    # Only save graph image when running directly, not when imported
     committee = AIAgentCommitee()
-    committee.save_graph_image()
+
+    # Only try to save image if running in development
+    try:
+        committee.save_graph_image()
+    except Exception as e:
+        print(f"Could not save graph image: {e}")
+
     test_proposal = Proposal(
         title="Pilot Implementation of Secure LLM Analytics Dashboard with Training Program",
         description="Develop a secure, maintainable MVP dashboard for LLM usage analytics with comprehensive training and support infrastructure.",
@@ -497,4 +503,7 @@ if __name__ == "__main__":
     )
 
     final_state = committee.review_proposal(test_proposal)
-    print(f"\n\n{final_state}")
+    # Export final state to JSON
+    with open("final_state.json", "w") as f:
+        json.dump(final_state, f, indent=4, default=str)
+    print(f"{final_state}")
