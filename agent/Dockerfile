@@ -1,3 +1,5 @@
+# Use ARG for platform specification
+ARG TARGETPLATFORM
 FROM python:3.10-slim
 
 WORKDIR /app
@@ -29,5 +31,5 @@ COPY . .
 # Expose port
 EXPOSE 8000
 
-# Run the application
-CMD ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8000"] 
+# Use python -m to run uvicorn instead of direct execution
+CMD ["python", "-m", "uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8000"] 

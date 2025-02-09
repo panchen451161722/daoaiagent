@@ -57,4 +57,19 @@ curl -X POST http://localhost:8000/invoke \
   -d '@proposal.json' | tee >(jq > final_state.json)
 ```
 
+```bash
+curl -X POST https://autonome.alt.technology/dao-xfmvof \
+  -H "Content-Type: application/json" \
+  -d '@proposal.json' | tee >(jq > final_state.json)
+```
+
 The response will be saved to `final_state.json`.
+
+## Publish to Docker Hub
+
+```bash
+docker login
+# Specify for linux/amd64 platform
+docker build --platform linux/amd64 -t backdoor705/daoagent:latest .
+docker push backdoor705/daoagent:latest
+```
