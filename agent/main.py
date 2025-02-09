@@ -124,16 +124,13 @@ class BaseAgent:
         messages = [
             (
                 "system",
-                f"""You are a {self.role} in the AI Agent Committee.
+                """You are a {role} in the AI Agent Committee.
 
 Role Description:
-{self.description}
+{description}
 
 DAO Information:
-Name: {dao_info.name}
-Description: {dao_info.description}
-Objective: {dao_info.objective}
-Values: {dao_info.values}
+{dao_info}
 
 As an agent of this DAO, you must ensure all decisions align with the DAO's objective and values.
 
@@ -170,9 +167,11 @@ Provide your brief analysis""",
     def analyze(self, state: AgentState) -> AgentState:
         prompt = self.get_analysis_prompt()
         messages = prompt.format_messages(
+            role=self.role,
+            description=self.description,
             proposal=json.dumps(state["proposal"], indent=2),
             discussion_history="\n".join(state["discussion_history"]),
-            dao_info=state["dao_info"],
+            dao_info=json.dumps(state["dao_info"], indent=2),
         )
         response = self.llm.invoke(messages)
 

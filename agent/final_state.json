@@ -1,87 +1,37 @@
 {
-    "proposal": {
-        "id": 3,
-        "title": "Pilot Implementation of Secure LLM Analytics Dashboard with Training Program",
-        "description": "Develop a secure, maintainable MVP dashboard for LLM usage analytics with comprehensive training and support infrastructure.",
-        "amount": 52000.0,
-        "additional_context": {
-            "timeline": "3 months",
-            "team_size": 1,
-            "expected_outcomes": [
-                "Basic dashboard showing daily/weekly LLM API usage patterns",
-                "Simple cost tracking and reporting functionality",
-                "Basic error rate monitoring",
-                "Usage patterns by endpoint/application",
-                "Comprehensive documentation and training materials"
-            ],
-            "risk_mitigation": {
-                "technical": "Using established open-source monitoring libraries and cloud-native solutions",
-                "financial": "Fixed-price engagement with clear deliverables",
-                "compliance": {
-                    "data_privacy": "Implemented data anonymization and encryption at rest",
-                    "access_control": "Role-based access with audit logging",
-                    "retention": "Configurable data retention policies",
-                    "backup": "Automated daily backups with 30-day retention"
-                },
-                "operational": {
-                    "incident_response": "Defined escalation procedures and SLAs",
-                    "maintenance_window": "Scheduled weekly maintenance slots",
-                    "rollback": "Automated rollback procedures for deployments"
-                }
-            },
-            "success_metrics": {
-                "performance": "Dashboard refresh rate under 5 minutes",
-                "reliability": "99% dashboard uptime",
-                "cost_efficiency": "Implementation cost recovered through 10% API cost reduction in first 6 months",
-                "adoption": "Dashboard actively used by at least 3 teams",
-                "training": "90% user satisfaction rate post-training"
-            },
-            "phased_implementation": [
-                "Week 1-2: Requirements gathering and security-first design",
-                "Week 3-5: Core dashboard development with security features",
-                "Week 6-8: Testing and security audit",
-                "Week 9-10: Training program development and documentation",
-                "Week 11-12: Pilot deployment and supervised usage"
-            ],
-            "support_and_maintenance": {
-                "training": {
-                    "initial": "2 structured training sessions for all users",
-                    "materials": "Video tutorials and comprehensive user guide",
-                    "ongoing": "Monthly office hours for Q&A"
-                },
-                "post_deployment": {
-                    "support_hours": "Business hours support for first 3 months",
-                    "feedback": "Monthly user feedback surveys and improvement cycles",
-                    "maintenance": "Weekly scheduled maintenance window",
-                    "monitoring": "24/7 automated system health checks"
-                },
-                "contingency_plans": {
-                    "data_issues": "Automated data validation and corruption detection",
-                    "system_failure": "Hot-standby backup instance",
-                    "integration": "Fallback endpoints and graceful degradation"
-                }
-            }
-        }
-    },
-    "dao_info": {
-        "name": "Research DAO",
-        "description": "A decentralized organization focused on advancing blockchain technology through funded research initiatives",
-        "objective": "To advance the field of blockchain technology by funding and coordinating innovative research projects and academic collaborations",
-        "values": "1. Scientific Rigor\n2. Open Source Collaboration\n3. Academic Excellence\n4. Innovation Focus\n5. Research Reproducibility"
-    },
-    "discussion_history": [
-        "Technical Advisor: The proposal demonstrates strong alignment with the DAO's values of scientific rigor and operational robustness, particularly through its use of established open-source monitoring tools and data privacy measures. However, to ensure successful collaboration and innovation, it would be beneficial to expand the team size beyond one member, as this could enhance the diversity of expertise and contribute to academic excellence. Additionally, clear documentation and thorough training materials are critical for fostering open-source collaboration and ensuring research reproducibility."
-    ],
-    "votes": {
-        "Technical Advisor": "APPROVE"
-    },
-    "final_decision": {
-        "decision": "APPROVE",
-        "justification": "Based on majority vote (Approve: 1, Reject: 0)"
-    },
-    "vote_counts": {
-        "approve": 1,
-        "reject": 0
-    },
-    "contract_execution": "Reviewed proposal 3 with decision True on network base-sepolia.\n            Transaction hash: 0x15a7da0c510cef48a264019e17cec0112dfb15f019d6476d00d19627de8bb2c9\n            Transaction link: https://sepolia.basescan.org/tx/0x15a7da0c510cef48a264019e17cec0112dfb15f019d6476d00d19627de8bb2c9"
+  "proposal": {
+    "id": 1,
+    "title": "Pilot Implementation of Secure LLM Analytics Dashboard with Training Program",
+    "description": "Develop a secure, maintainable MVP dashboard for LLM usage analytics with comprehensive training and support infrastructure.",
+    "amount": 52000,
+    "additional_context": {
+      "timeline": "3 months",
+      "team_size": 1
+    }
+  },
+  "dao_info": {
+    "name": "Research DAO",
+    "description": "A decentralized organization focused on advancing blockchain technology through funded research initiatives",
+    "objective": "To advance the field of blockchain technology by funding and coordinating innovative research projects and academic collaborations",
+    "values": "1. Scientific Rigor\n2. Open Source Collaboration\n3. Academic Excellence\n4. Innovation Focus\n5. Research Reproducibility"
+  },
+  "discussion_history": [
+    "Technical Advisor: The proposal for the MVP dashboard demonstrates a clear focus on security and user training, which aligns with the DAO's values of scientific rigor and innovation focus. However, the tight timeline of 3 months with a single team member may pose risks to the project's feasibility and thoroughness, potentially compromising the goal of research reproducibility. I recommend ensuring that adequate resources and support are allocated to meet both the technical demands and the training program's requirements.",
+    "Financial Advisor: The proposed budget of $52,000 for a single team member over a three-month timeline raises concerns regarding resource adequacy and project feasibility, potentially jeopardizing the project's alignment with the DAO's values of academic excellence and research reproducibility. Increasing the team size or extending the timeline could enhance the quality of the MVP dashboard and the accompanying training program, thereby better fulfilling the DAO's objective of innovative and effective research initiatives.",
+    "Compliance Officer: The proposal for the Secure LLM Analytics Dashboard appears well-intentioned but raises significant concerns regarding resource adequacy and project feasibility. Given the potential risks highlighted by both the Technical and Financial Advisors, I recommend reevaluating the project timeline and team size to ensure that the final product supports the DAO's values of research reproducibility and academic excellence, thereby enhancing the overall effectiveness of the initiative."
+  ],
+  "votes": {
+    "Technical Advisor": "REJECT",
+    "Financial Advisor": "REJECT",
+    "Compliance Officer": "REJECT"
+  },
+  "final_decision": {
+    "decision": "REJECT",
+    "justification": "Based on majority vote (Approve: 0, Reject: 3)"
+  },
+  "vote_counts": {
+    "approve": 0,
+    "reject": 3
+  },
+  "contract_execution": "Error executing review_proposal: ApiError(http_code=500, api_code=internal, api_message=unable to request faucet funds, correlation_id=90f4c78f2b81fdb2-IAD)"
 }

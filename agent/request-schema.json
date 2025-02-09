@@ -1,21 +1,91 @@
 {
+    "$schema": "http://json-schema.org/draft-07/schema#",
     "type": "object",
+    "required": [
+        "proposal",
+        "dao_info",
+        "agents_config"
+    ],
     "properties": {
-        "title": {
-            "type": "string",
-            "required": true
-        },
-        "description": {
-            "type": "string",
-            "required": true
-        },
-        "amount": {
-            "type": "integer",
-            "required": true
-        },
-        "additional_context": {
+        "proposal": {
             "type": "object",
-            "required": true
+            "required": ["id", "title", "description", "amount"],
+            "properties": {
+                "id": {
+                    "type": "integer",
+                    "description": "Unique identifier for the proposal"
+                },
+                "title": {
+                    "type": "string",
+                    "description": "Title of the proposal"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Detailed description of the proposal"
+                },
+                "amount": {
+                    "type": "number",
+                    "description": "Requested funding amount"
+                },
+                "additional_context": {
+                    "type": "object",
+                    "description": "Additional proposal details and context"
+                }
+            }
+        },
+        "dao_info": {
+            "type": "object",
+            "required": ["name", "description", "objective", "values"],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "Name of the DAO"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Description of the DAO"
+                },
+                "objective": {
+                    "type": "string",
+                    "description": "Primary objective of the DAO"
+                },
+                "values": {
+                    "type": "string",
+                    "description": "Core values of the DAO"
+                }
+            }
+        },
+        "agents_config": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": ["id", "role", "prompts", "nexts"],
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "description": "Unique identifier for the agent"
+                    },
+                    "role": {
+                        "type": "string",
+                        "description": "Role description of the agent"
+                    },
+                    "prompts": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "description": "List of prompts for the agent to consider"
+                    },
+                    "nexts": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "description": "List of next agent IDs in the workflow"
+                    }
+                }
+            },
+            "description": "Configuration for the AI agents reviewing the proposal"
         }
     }
 }

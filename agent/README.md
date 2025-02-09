@@ -54,16 +54,16 @@ Submit a proposal in `proposal.json` for review:
 ```bash
 curl -X POST http://localhost:8000/invoke \
   -H "Content-Type: application/json" \
-  -d '@proposal.json' | tee >(jq > final_state.json)
+  -d '@input.json' | tee >(jq > output.json)
 ```
 
 ```bash
 curl -X POST https://autonome.alt.technology/dao-xfmvof \
   -H "Content-Type: application/json" \
-  -d '@proposal.json' | tee >(jq > final_state.json)
+  -d '@input.json' | tee >(jq > output.json)
 ```
 
-The response will be saved to `final_state.json`.
+The response will be saved to `output.json`.
 
 ## Publish to Docker Hub
 

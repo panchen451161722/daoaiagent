@@ -1,0 +1,54 @@
+{
+    "proposal": {
+        "id": 1,
+        "title": "Pilot Implementation of Secure LLM Analytics Dashboard with Training Program",
+        "description": "Develop a secure, maintainable MVP dashboard for LLM usage analytics with comprehensive training and support infrastructure.",
+        "amount": 52000.00,
+        "additional_context": {
+            "timeline": "3 months",
+            "team_size": 1
+        }
+    },
+    "dao_info": {
+        "name": "Research DAO",
+        "description": "A decentralized organization focused on advancing blockchain technology through funded research initiatives",
+        "objective": "To advance the field of blockchain technology by funding and coordinating innovative research projects and academic collaborations",
+        "values": "1. Scientific Rigor\n2. Open Source Collaboration\n3. Academic Excellence\n4. Innovation Focus\n5. Research Reproducibility"
+    },
+    "agents_config": [
+        {
+            "id": "technical",
+            "role": "Technical Advisor",
+            "prompts": [
+                "Evaluate technical feasibility and architecture",
+                "Assess security measures and implementation risks",
+                "Review technical specifications and timeline"
+            ],
+            "nexts": [
+                "financial"
+            ]
+        },
+        {
+            "id": "financial",
+            "role": "Financial Advisor",
+            "prompts": [
+                "Analyze cost-benefit ratio and ROI",
+                "Evaluate budget allocation and resource planning",
+                "Review financial risks and contingencies"
+            ],
+            "nexts": [
+                "compliance"
+            ]
+        },
+        {
+            "id": "compliance",
+            "role": "Compliance Officer",
+            "prompts": [
+                "Review data privacy and security compliance",
+                "Assess governance alignment and regulatory requirements",
+                "Evaluate operational risk controls"
+            ],
+            "nexts": []
+        }
+    ]
+}
