@@ -22,13 +22,64 @@ interface AIAConfig {
 
 export default function ManifestoForm() {
   const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    logo: "", 
-    tokenContractAddress: "",
-    objective: "",
-    values: "",
-    allowIndependentAIA: false
+    name: "My DAO",
+    description: "A decentralized organization powered by AI agents",
+    logo: "🤖", 
+    tokenContractAddress: "0xDfbEE02da49CB97E75A8AaD35620FE602F38fb19",
+    objective: `Our mission is to revolutionize decentralized governance through the seamless integration of AI agents and human collaboration. We aim to achieve this through the following SMART objectives:
+
+1. Specific: Develop and deploy a network of specialized AI agents that serve distinct roles within the DAO ecosystem, each contributing their unique capabilities to enhance decision-making and operational efficiency.
+
+2. Measurable: 
+   - Achieve a 90% consensus rate in proposal voting through AI-assisted deliberation by Q4 2025
+   - Onboard 1000 active members and deploy 50 specialized AI agents across various roles by Q2 2025
+   - Reduce average proposal processing time by 60% through AI-driven automation by Q3 2025
+
+3. Achievable: Leverage cutting-edge language models and decision-making frameworks to create AI agents that can effectively:
+   - Analyze and summarize proposals
+   - Facilitate discussions between stakeholders
+   - Provide data-driven insights for decision-making
+   - Monitor and report on proposal implementation
+
+4. Relevant: Address the core challenges in DAO governance by:
+   - Enhancing proposal quality through AI-assisted refinement
+   - Improving participation rates through engaging AI-driven interactions
+   - Ensuring transparent and accountable decision-making processes
+   - Fostering a collaborative environment between human members and AI agents
+
+5. Time-bound: Establish a fully operational AI-enhanced DAO governance system by Q4 2025, with quarterly milestones for feature deployment and performance optimization.`,
+    values: `Our DAO is built upon a foundation of core values that guide every aspect of our operations and decision-making:
+
+1. Transparency:
+   - Maintain an immutable record of all decisions and their rationale
+   - Ensure all AI agent actions are traceable and auditable
+   - Provide clear documentation of governance processes and system architecture
+   - Regular reporting on DAO performance and milestone achievements
+
+2. Innovation:
+   - Continuously explore and integrate emerging AI technologies
+   - Encourage experimental governance models that combine human and AI capabilities
+   - Foster a culture of creative problem-solving and iterative improvement
+   - Support research and development in AI governance mechanisms
+
+3. Collaboration:
+   - Create synergistic relationships between human members and AI agents
+   - Facilitate knowledge sharing across different expertise domains
+   - Promote inclusive decision-making that considers diverse perspectives
+   - Build bridges between traditional organizations and Web3 communities
+
+4. Decentralization:
+   - Distribute power and responsibility across the network
+   - Prevent concentration of control through algorithmic checks and balances
+   - Enable permissionless participation while maintaining system integrity
+   - Support autonomous operation through smart contracts and AI automation
+
+5. Ethical AI Development:
+   - Prioritize responsible AI deployment with human oversight
+   - Ensure AI decisions align with community values and interests
+   - Maintain transparency in AI training and decision-making processes
+   - Regular ethical audits of AI agent behaviors and impacts`,
+    allowIndependentAIA: true
   })
 
   const [agents, setAgents] = useState<AIAConfig[]>([])
@@ -156,10 +207,10 @@ export default function ManifestoForm() {
       </div>
 
       {/* Process Configuration */}
-      <div className="space-y-4">
+      {false && <div className="space-y-4">
         <h2 className="text-2xl font-bold">Process Configuration</h2>
         <ProcessConfig onChange={setProcesses} />
-      </div>
+      </div>}
 
       {/* Form Actions */}
       <div className="flex justify-end gap-4">
