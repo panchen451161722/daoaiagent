@@ -1,4 +1,5 @@
 import { create } from "zustand"
+import { persist, createJSONStorage } from 'zustand/middleware'
 
 interface AIAPermission {
   id: string
@@ -99,167 +100,179 @@ export const predefinedPrompts: Record<string, PredefinedPrompt> = {
   }
 }
 
-export const useAIAStore = create<AIAStore>((set, get) => ({
-  aias: [
-    {
-      id: "1",
-      role: "Proposal Coordinator",
-      type: "Internal",
-      emoji: "📋",
-      description: "Responsible for proposal routing, prioritization, and ensuring proper format and completeness.",
-      prompts: [
+export const useAIAStore = create<AIAStore>()(
+  persist(
+    (set, get) => ({
+      aias: [
         {
-          type: "system",
-          content: "You are a Proposal Coordinator responsible for routing and prioritizing proposals.",
-          description: "Core role definition"
+          id: "1",
+          role: "Proposal Coordinator",
+          type: "Internal",
+          emoji: "📋",
+          description: "Responsible for proposal routing, prioritization, and ensuring proper format and completeness.",
+          prompts: [
+            {
+              type: "system",
+              content: "You are a Proposal Coordinator responsible for routing and prioritizing proposals.",
+              description: "Core role definition"
+            },
+            {
+              type: "human",
+              content: "Review the proposal:\n{proposal}\n\nProvide routing recommendations based on the content and priority.",
+              description: "Routing instruction template"
+            }
+          ],
+          activeDAOs: 3,
+          totalMeetings: 45,
+          recentActivity: "Coordinated DeFi DAO governance model review",
+          recentActivities: [
+            {
+              id: "act1",
+              date: "2024-01-30",
+              daoName: "DeFi DAO",
+              action: "Coordinated governance model review",
+              status: "Completed"
+            },
+            {
+              id: "act2",
+              date: "2024-01-29",
+              daoName: "NFT Creators",
+              action: "Initiated proposal review process",
+              status: "In Progress"
+            }
+          ]
         },
         {
-          type: "human",
-          content: "Review the proposal:\n{proposal}\n\nProvide routing recommendations based on the content and priority.",
-          description: "Routing instruction template"
+          id: "2",
+          role: "Chief Auditor",
+          type: "Internal",
+          emoji: "🔍",
+          description: "Final veto authority, responsible for overall compliance and risk assessment.",
+          prompts: [
+            {
+              type: "system",
+              content: "You are the Chief Auditor with veto power. You can only REJECT a proposal if you find serious compliance or risk issues.",
+              description: "Core role and authority"
+            },
+            {
+              type: "human",
+              content: "Review discussions and votes:\n{discussion_history}\n\nVotes: {votes}\nApprove: {approve_count}\nReject: {reject_count}\n\nProposal: {proposal}",
+              description: "Decision template with vote summary"
+            }
+          ],
+          activeDAOs: 5,
+          totalMeetings: 78,
+          recentActivity: "Completed risk assessment for NFT verification system"
+        },
+        {
+          id: "3",
+          role: "Technical Advisor",
+          type: "Public",
+          emoji: "💻",
+          description: "Responsible for technical risk assessment and implementation feasibility.",
+          prompts: [
+            {
+              type: "system",
+              content: "You are a Technical Advisor responsible for assessing technical risks and feasibility.",
+              description: "Core role definition"
+            },
+            {
+              type: "human",
+              content: "Review the technical implementation:\n{implementation}\n\nProvide feedback on technical risks and feasibility.",
+              description: "Technical assessment template"
+            }
+          ],
+          activeDAOs: 8,
+          totalMeetings: 92,
+          recentActivity: "Evaluated gaming integration requirements"
+        },
+        {
+          id: "4",
+          role: "Financial Controller",
+          type: "Public",
+          emoji: "💰",
+          description: "Responsible for budget enforcement and financial risk assessment.",
+          prompts: [
+            {
+              type: "system",
+              content: "You are a Financial Controller responsible for enforcing budget and assessing financial risks.",
+              description: "Core role definition"
+            },
+            {
+              type: "human",
+              content: "Review the financial proposal:\n{proposal}\n\nProvide feedback on budget and financial risks.",
+              description: "Financial assessment template"
+            }
+          ],
+          activeDAOs: 6,
+          totalMeetings: 63,
+          recentActivity: "Reviewed Q1 treasury allocation proposals"
+        },
+        {
+          id: "5",
+          role: "Proposal Checker",
+          type: "Internal",
+          emoji: "✅",
+          description: "Responsible for initial proposal validation and quick risk assessment.",
+          prompts: [
+            {
+              type: "system",
+              content: "You are a Proposal Checker responsible for validating proposals and assessing quick risks.",
+              description: "Core role definition"
+            },
+            {
+              type: "human",
+              content: "Review the proposal:\n{proposal}\n\nProvide feedback on validation and quick risks.",
+              description: "Validation template"
+            }
+          ],
+          activeDAOs: 4,
+          totalMeetings: 55,
+          recentActivity: "Completed initial validation of 3 new proposals"
         }
       ],
-      activeDAOs: 3,
-      totalMeetings: 45,
-      recentActivity: "Coordinated DeFi DAO governance model review",
-      recentActivities: [
+      abilities: [
         {
-          id: "act1",
-          date: "2024-01-30",
-          daoName: "DeFi DAO",
-          action: "Coordinated governance model review",
-          status: "Completed"
+          id: "proposal_analysis",
+          title: "Proposal Analysis",
+          description: "Analyze proposals for technical feasibility, risks, and alignment with DAO objectives"
         },
         {
-          id: "act2",
-          date: "2024-01-29",
-          daoName: "NFT Creators",
-          action: "Initiated proposal review process",
-          status: "In Progress"
-        }
-      ]
-    },
-    {
-      id: "2",
-      role: "Chief Auditor",
-      type: "Internal",
-      emoji: "🔍",
-      description: "Final veto authority, responsible for overall compliance and risk assessment.",
-      prompts: [
-        {
-          type: "system",
-          content: "You are the Chief Auditor with veto power. You can only REJECT a proposal if you find serious compliance or risk issues.",
-          description: "Core role and authority"
+          id: "code_review",
+          title: "Code Review",
+          description: "Review smart contract code and technical implementations for security and best practices"
         },
         {
-          type: "human",
-          content: "Review discussions and votes:\n{discussion_history}\n\nVotes: {votes}\nApprove: {approve_count}\nReject: {reject_count}\n\nProposal: {proposal}",
-          description: "Decision template with vote summary"
+          id: "financial_analysis",
+          title: "Financial Analysis",
+          description: "Analyze financial implications, budget requirements, and economic impact"
+        },
+        {
+          id: "governance_optimization",
+          title: "Governance Optimization",
+          description: "Suggest improvements to governance processes and voting mechanisms"
+        },
+        {
+          id: "risk_assessment",
+          title: "Risk Assessment",
+          description: "Identify and evaluate potential risks in proposals and operations"
+        },
+        {
+          id: "community_engagement",
+          title: "Community Engagement",
+          description: "Analyze community sentiment and facilitate discussions"
         }
       ],
-      activeDAOs: 5,
-      totalMeetings: 78,
-      recentActivity: "Completed risk assessment for NFT verification system"
-    },
+      getAIAById: (id) => get().aias.find((aia) => aia.id === id),
+      supportedReplacements
+    }),
     {
-      id: "3",
-      role: "Technical Advisor",
-      type: "Public",
-      emoji: "💻",
-      description: "Responsible for technical risk assessment and implementation feasibility.",
-      prompts: [
-        {
-          type: "system",
-          content: "You are a Technical Advisor responsible for assessing technical risks and feasibility.",
-          description: "Core role definition"
-        },
-        {
-          type: "human",
-          content: "Review the technical implementation:\n{implementation}\n\nProvide feedback on technical risks and feasibility.",
-          description: "Technical assessment template"
-        }
-      ],
-      activeDAOs: 8,
-      totalMeetings: 92,
-      recentActivity: "Evaluated gaming integration requirements"
-    },
-    {
-      id: "4",
-      role: "Financial Controller",
-      type: "Public",
-      emoji: "💰",
-      description: "Responsible for budget enforcement and financial risk assessment.",
-      prompts: [
-        {
-          type: "system",
-          content: "You are a Financial Controller responsible for enforcing budget and assessing financial risks.",
-          description: "Core role definition"
-        },
-        {
-          type: "human",
-          content: "Review the financial proposal:\n{proposal}\n\nProvide feedback on budget and financial risks.",
-          description: "Financial assessment template"
-        }
-      ],
-      activeDAOs: 6,
-      totalMeetings: 63,
-      recentActivity: "Reviewed Q1 treasury allocation proposals"
-    },
-    {
-      id: "5",
-      role: "Proposal Checker",
-      type: "Internal",
-      emoji: "✅",
-      description: "Responsible for initial proposal validation and quick risk assessment.",
-      prompts: [
-        {
-          type: "system",
-          content: "You are a Proposal Checker responsible for validating proposals and assessing quick risks.",
-          description: "Core role definition"
-        },
-        {
-          type: "human",
-          content: "Review the proposal:\n{proposal}\n\nProvide feedback on validation and quick risks.",
-          description: "Validation template"
-        }
-      ],
-      activeDAOs: 4,
-      totalMeetings: 55,
-      recentActivity: "Completed initial validation of 3 new proposals"
+      name: 'aia-storage',
+      storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({
+        aias: state.aias,
+        abilities: state.abilities
+      })
     }
-  ],
-  abilities: [
-    {
-      id: "proposal_analysis",
-      title: "Proposal Analysis",
-      description: "Analyze proposals for technical feasibility, risks, and alignment with DAO objectives"
-    },
-    {
-      id: "code_review",
-      title: "Code Review",
-      description: "Review smart contract code and technical implementations for security and best practices"
-    },
-    {
-      id: "financial_analysis",
-      title: "Financial Analysis",
-      description: "Analyze financial implications, budget requirements, and economic impact"
-    },
-    {
-      id: "governance_optimization",
-      title: "Governance Optimization",
-      description: "Suggest improvements to governance processes and voting mechanisms"
-    },
-    {
-      id: "risk_assessment",
-      title: "Risk Assessment",
-      description: "Identify and evaluate potential risks in proposals and operations"
-    },
-    {
-      id: "community_engagement",
-      title: "Community Engagement",
-      description: "Analyze community sentiment and facilitate discussions"
-    }
-  ],
-  getAIAById: (id) => get().aias.find((aia) => aia.id === id),
-  supportedReplacements
-}))
+  )
+)
