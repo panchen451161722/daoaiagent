@@ -4,11 +4,16 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Dict, List, Literal, TypedDict
 
+from cdp import Wallet
+from cdp_langchain.agent_toolkits import CdpToolkit
+from cdp_langchain.tools import CdpTool
+from cdp_langchain.utils import CdpAgentkitWrapper
 from dotenv import load_dotenv
 from IPython.display import Image
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 from langgraph.graph import END, StateGraph
+from langgraph.prebuilt import create_react_agent
 from pydantic import BaseModel, Field
 from typing_extensions import TypedDict
 
@@ -49,6 +54,7 @@ class DAOInfo:
 
 @dataclass
 class Proposal:
+    id: int
     title: str
     description: str
     amount: float
@@ -71,6 +77,7 @@ class AgentState(TypedDict):
     votes: Dict[str, str]
     final_decision: Dict[str, str]
     vote_counts: Dict[str, int]
+    contract_execution: Dict[str, Any]
 
 
 # Add these new models near the top with other data models
@@ -85,6 +92,16 @@ class PrecheckResult(BaseModel):
     issues: List[str] = Field(description="List of major issues if any")
     proceed_to_review: bool
     explanation: str = Field(description="Brief explanation of decision")
+
+
+# Add after the existing data models
+class ReviewProposalInput(BaseModel):
+    """Input argument schema for review proposal action."""
+
+    proposal_id: int = Field(..., description="The ID of the proposal to review")
+    approve: bool = Field(
+        ..., description="True to approve the proposal, False to reject it"
+    )
 
 
 # Agent Definitions
@@ -216,6 +233,102 @@ class VoteCounter:
         return state
 
 
+class ContractAgent(BaseAgent):
+    def __init__(self):
+        super().__init__(
+            role="Contract Agent",
+            description="An agent that can interact with the smart contract to submit the final proposal decision",
+        )
+        self.contract_address = os.getenv("CONTRACT_ADDRESS")
+        # Initialize CDP wrapper
+        self.cdp = CdpAgentkitWrapper()
+
+        # Create review proposal tool
+        review_proposal_tool = CdpTool(
+            name="review_proposal",
+            description="Call reviewProposal function on the DAO contract to approve or reject a proposal",
+            cdp_agentkit_wrapper=self.cdp,
+            args_schema=ReviewProposalInput,
+            func=self.review_proposal,
+        )
+
+        # Initialize toolkit from wrapper
+        self.toolkit = CdpToolkit.from_cdp_agentkit_wrapper(self.cdp)
+        # Get available tools and add review proposal tool
+        self.tools = [review_proposal_tool]
+        # Create the agent
+        self.agent = create_react_agent(
+            model=self.llm,
+            tools=self.tools,
+        )
+
+    def review_proposal(self, wallet: Wallet, proposal_id: int, approve: bool) -> str:
+        """Call reviewProposal function on the smart contract.
+
+        Args:
+            wallet (Wallet): The wallet to submit the transaction from
+            proposal_id (int): The ID of the proposal to review
+            approve (bool): True to approve, False to reject
+
+        Returns:
+            str: Transaction result message with details
+        """
+        review_args = {"_proposalId": proposal_id, "_approve": approve}
+
+        try:
+            review_invocation = wallet.invoke_contract(
+                contract_address=self.contract_address,
+                method="reviewProposal",
+                args=review_args,
+            ).wait()
+        except Exception as e:
+            return f"Error reviewing proposal: {e!s}"
+
+        return (
+            f"Reviewed proposal {proposal_id} with decision {approve} on network {wallet.network_id}.\n"
+            f"Transaction hash: {review_invocation.transaction.transaction_hash}\n"
+            f"Transaction link: {review_invocation.transaction.transaction_link}"
+        )
+
+    def execute_contract(self, state: AgentState) -> AgentState:
+        """Execute reviewProposal on the smart contract based on final decision"""
+        prompt = ChatPromptTemplate.from_messages(
+            [
+                (
+                    "system",
+                    """You are a contract agent responsible for submitting the final decision to the blockchain.
+                Use the available tools to call the reviewProposal function on the smart contract.
+                
+                The reviewProposal function takes two parameters:
+                - _proposalId: uint256 - The ID of the proposal
+                - _approve: bool - True for APPROVE, False for REJECT""",
+                ),
+                (
+                    "human",
+                    """Here is the final decision:
+                {final_decision}
+                
+                Call the reviewProposal function with the appropriate approval value based on the final decision.
+                proposal_id = {proposal_id}
+                """,
+                ),
+            ]
+        )
+
+        messages = prompt.format_messages(
+            final_decision=state["final_decision"],
+            proposal_id=state["proposal"]["id"],
+        )
+
+        # Use the ReAct agent to execute the contract interaction
+        response = self.agent.invoke(messages)
+
+        # Add the contract execution result to the state
+        state["contract_execution"] = response.return_values
+
+        return state
+
+
 def create_dynamic_workflow(agents_config: List[Dict[str, Any]]) -> StateGraph:
     if not agents_config:
         raise ValueError("agents_config is empty")
@@ -263,10 +376,17 @@ def create_dynamic_workflow(agents_config: List[Dict[str, Any]]) -> StateGraph:
         else:
             workflow.add_edge(f"{config['id']}_vote", "count_votes")
 
-    # Add vote counting node and connect to END
+    # Add vote counting node
     vote_counter = VoteCounter()
     workflow.add_node("count_votes", vote_counter.count_votes)
-    workflow.add_edge("count_votes", END)
+
+    # Add contract agent node after vote counting
+    contract_agent = ContractAgent()
+    workflow.add_node("execute_contract", contract_agent.execute_contract)
+
+    # Update the edges
+    workflow.add_edge("count_votes", "execute_contract")
+    workflow.add_edge("execute_contract", END)
 
     return workflow.compile()
 
@@ -287,6 +407,7 @@ class AIAgentCommitee:
                 decision="REJECT", justification="No votes cast"
             ).model_dump(),
             vote_counts={"approve": 0, "reject": 0},
+            contract_execution={},  # Add this field to store contract execution results
         )
 
         last_state = None
@@ -338,6 +459,7 @@ if __name__ == "__main__":
     )
 
     test_proposal = Proposal(
+        id=10086,
         title="Pilot Implementation of Secure LLM Analytics Dashboard with Training Program",
         description="Develop a secure, maintainable MVP dashboard for LLM usage analytics with comprehensive training and support infrastructure.",
         amount=52000.00,

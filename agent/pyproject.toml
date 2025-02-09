@@ -16,6 +16,7 @@ dependencies = [
     "langsmith (>=0.3.4,<0.4.0)",
     "fastapi (>=0.115.8,<0.116.0)",
     "uvicorn (>=0.34.0,<0.35.0)",
+    "cdp-langchain (>=0.0.13,<0.0.14)",
 ]
 
 [tool.poetry]
