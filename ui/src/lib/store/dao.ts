@@ -246,27 +246,27 @@ const initialProposals: Proposal[] = [
   {
     id: 1390,
     daoId: 1,
-    title: "Talisman - Mobile Wallet Proposal",
+    title: "Ledger - Hardware Wallet SDK Integration",
     type: "treasury",
     status: "Proposed",
     created: "2025-01-16",
     creator: {
-      name: "Warp Lizard | Talisman",
-      avatar: "🦎"
+      name: "Crypto Dragon | Ledger",
+      avatar: "🐉"
     },
     beneficiary: {
       name: "16q8...gAQT",
-      avatar: "🦎"
+      avatar: "🐉"
     },
     funding: {
       amount: 598100,
       currency: "USDT",
       releasePercentage: 40
     },
-    summary: "This proposal seeks funding for a Talisman mobile wallet for both iOS and Android.",
-    details: "We aim to place the distinctive Talisman user experience into the hands of our current and future users – to transform their web3 journey with a seamless mobile app experience. The Talisman mobile wallet will be a new product that will work seamlessly with the existing Talisman browser extension wallet and Portal web application. This is a proactive proposal that seeks US$598,100 in USDT for development of the mobile app (from Mar 2025 to Sep 2025).",
-    fundingPlan: "The requested funding will be allocated as follows:\n- Development Team (60%): $358,860\n  - Mobile App Development\n  - UI/UX Design\n  - Testing and QA\n- Security Audits (20%): $119,620\n  - External Security Review\n  - Penetration Testing\n- Marketing & User Acquisition (15%): $89,715\n  - Launch Campaign\n  - Community Engagement\n- Contingency (5%): $29,905",
-    expectedOutcome: "Key deliverables and milestones:\n1. iOS and Android mobile wallet apps with core functionality\n2. Seamless integration with existing Talisman extension\n3. Enhanced security features and user experience\n4. Increased user adoption and engagement\n5. Successful security audits and app store approvals",
+    summary: "This proposal seeks funding for integrating Ledger hardware wallet SDK for enhanced security.",
+    details: "We aim to place the distinctive Ledger security features into the hands of our current and future users – to transform their web3 journey with a seamless hardware wallet integration. The Ledger SDK will be a new product that will work seamlessly with the existing Ledger hardware wallets and Ledger Live application. This is a proactive proposal that seeks US$598,100 in USDT for development of the SDK integration (from Mar 2025 to Sep 2025).",
+    fundingPlan: "The requested funding will be allocated as follows:\n- Development Team (60%): $358,860\n  - SDK Integration Development\n  - UI/UX Design\n  - Testing and QA\n- Security Audits (20%): $119,620\n  - Kudelski Security Review\n  - NCC Group Penetration Testing\n- Marketing & User Acquisition (15%): $89,715\n  - Kraken Launch Campaign\n  - Gemini Community Engagement\n- Contingency (5%): $29,905",
+    expectedOutcome: "Key deliverables and milestones:\n1. SDK integration with major hardware wallet models\n2. Seamless integration with existing Ledger Live\n3. Enhanced security features and user experience\n4. Increased user adoption and engagement\n5. Successful security audits and store approvals",
     history: [
       {
         id: 1,
@@ -337,7 +337,7 @@ const initialMeetings: Meeting[] = [
     daoId: "1",
     daoName: "DeFi DAO",
     proposalId: "1390",
-    proposalTitle: "Talisman - Mobile Wallet Proposal",
+    proposalTitle: "Ledger - Hardware Wallet SDK Integration",
     date: "2024-01-30",
     status: "Completed",
     

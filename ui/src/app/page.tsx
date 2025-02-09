@@ -56,6 +56,74 @@ export default function Home() {
               </p>
             </div>
           </div>
+
+          <div className="mt-16 w-full max-w-[800px]">
+            <h2 className="text-2xl font-bold mb-8">System Architecture</h2>
+            <div className="relative w-full aspect-[16/9]">
+              <Image
+                src="/arch.drawio.svg"
+                alt="System Architecture"
+                fill
+                className="object-contain"
+                priority
+              />
+            </div>
+            <div className="mt-8 text-left max-w-[800px] mx-auto">
+              <p className="text-lg text-muted-foreground">
+                Our system architecture is designed to seamlessly integrate AI agents with blockchain technology.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-16 w-full max-w-[800px]">
+            <h2 className="text-2xl font-bold mb-8">AI Agent Committee</h2>
+            <div className="relative w-full aspect-[16/9]">
+              <Image
+                src="/committee.drawio.svg"
+                alt="AI Agent Committee"
+                fill
+                className="object-contain"
+                priority
+              />
+            </div>
+            <div className="mt-8 text-left max-w-[800px] mx-auto space-y-6">
+              <p className="text-lg text-muted-foreground">
+                The AI Agent Committee (AIAC) revolutionizes DAO governance by bringing together specialized AI agents to form an intelligent decision-making body.
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                <div className="space-y-2">
+                  <h3 className="font-semibold text-primary">Internal Agents</h3>
+                  <ul className="list-disc list-inside text-muted-foreground space-y-1">
+                    <li>Core DAO operations</li>
+                    <li>Proposal orchestration</li>
+                    <li>Strategic decision review</li>
+                    <li>Autonomous upgrades</li>
+                  </ul>
+                </div>
+                <div className="space-y-2">
+                  <h3 className="font-semibold text-primary">Public Agents</h3>
+                  <ul className="list-disc list-inside text-muted-foreground space-y-1">
+                    <li>Cross-DAO collaboration</li>
+                    <li>Standardized services</li>
+                    <li>Governance oversight</li>
+                    <li>Community-driven evolution</li>
+                  </ul>
+                </div>
+                <div className="space-y-2">
+                  <h3 className="font-semibold text-primary">Individual Agents</h3>
+                  <ul className="list-disc list-inside text-muted-foreground space-y-1">
+                    <li>Personal task automation</li>
+                    <li>Decision assistance</li>
+                    <li>Customized workflows</li>
+                    <li>Secure agent boundaries</li>
+                  </ul>
+                </div>
+              </div>
+              <p className="text-sm text-muted-foreground border-t pt-4">
+                Each agent's decision weight and responsibilities are defined in the DAO manifesto, ensuring transparent and effective governance.
+              </p>
+            </div>
+          </div>
         </div>
       </main>
     </div>

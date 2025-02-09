@@ -1,6 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+// 引入IERC20接口
+interface IERC20 {
+    function transfer(address recipient, uint256 amount) external returns (bool);
+    function balanceOf(address account) external view returns (uint256);
+}
+
 contract DAOAIAgent {
     // Proposal status enum
     enum ProposalStatus {
@@ -44,7 +50,7 @@ contract DAOAIAgent {
     address[] public activeAIAgents;               // Active AIA list
 
     // New state variables
-    address public tokenContractAddress;           // Token contract address
+    IERC20 public tokenContract;                   // Token contract instance
     bool public allowIndependentAIA;               // Allow independent AIA
     bytes32 public otherContentHash;               // Other content hash
 
@@ -70,7 +76,7 @@ contract DAOAIAgent {
     // Constructor
     constructor(address _tokenContractAddress, bool _allowIndependentAIA, bytes32 _otherContentHash) {
         daoAdmin = msg.sender;
-        tokenContractAddress = _tokenContractAddress;
+        tokenContract = IERC20(_tokenContractAddress);
         allowIndependentAIA = _allowIndependentAIA;
         otherContentHash = _otherContentHash;
     }
@@ -111,13 +117,13 @@ contract DAOAIAgent {
     function fundProposal(uint256 _proposalId) external onlyAdmin {
         Proposal storage proposal = proposals[_proposalId];
         require(proposal.status == ProposalStatus.Approved, "Proposal is not approved");
-        require(address(this).balance >= proposal.amount, "Insufficient funds");
+        require(tokenContract.balanceOf(address(this)) >= proposal.amount, "Insufficient token balance");
         
         proposal.status = ProposalStatus.Funded;
         emit ProposalStatusUpdated(_proposalId, ProposalStatus.Funded);
 
-        // Transfer funds to the recipient
-        proposal.recipient.transfer(proposal.amount);
+        // Transfer ERC20 tokens to the recipient
+        require(tokenContract.transfer(proposal.recipient, proposal.amount), "Token transfer failed");
         emit FundsTransferred(_proposalId, proposal.recipient, proposal.amount);
     }
 
@@ -161,3 +167,4 @@ contract DAOAIAgent {
         });
     }
 }
+

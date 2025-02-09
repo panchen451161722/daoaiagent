@@ -1,6 +1,8 @@
 "use client"
 
 import { useState, useRef } from "react"
+import { useWriteContract } from 'wagmi'
+import { SHA256 } from 'crypto-js'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -8,6 +10,7 @@ import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import AIAConfigPanel from "./aia-config-panel"
 import ProcessConfig, { type ProcessConfigs } from "./process-config"
+import { daoFactoryABI, daoFactoryAddress } from "@/contracts/dao-factory"
 
 interface AIAConfig {
   id: string
@@ -21,27 +24,106 @@ interface AIAConfig {
 }
 
 export default function ManifestoForm() {
+  const { data: hash, writeContract, isPending, isError, error } = useWriteContract()
   const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    logo: "", 
-    tokenContractAddress: "",
-    objective: "",
-    values: "",
-    allowIndependentAIA: false
+    name: "My DAO",
+    description: "A decentralized organization powered by AI agents",
+    logo: "🤖", 
+    tokenContractAddress: "0xDfbEE02da49CB97E75A8AaD35620FE602F38fb19",
+    objective: `Our mission is to revolutionize decentralized governance through the seamless integration of AI agents and human collaboration. We aim to achieve this through the following SMART objectives:
+
+1. Specific: Develop and deploy a network of specialized AI agents that serve distinct roles within the DAO ecosystem, each contributing their unique capabilities to enhance decision-making and operational efficiency.
+
+2. Measurable: 
+   - Achieve a 90% consensus rate in proposal voting through AI-assisted deliberation by Q4 2025
+   - Onboard 1000 active members and deploy 50 specialized AI agents across various roles by Q2 2025
+   - Reduce average proposal processing time by 60% through AI-driven automation by Q3 2025
+
+3. Achievable: Leverage cutting-edge language models and decision-making frameworks to create AI agents that can effectively:
+   - Analyze and summarize proposals
+   - Facilitate discussions between stakeholders
+   - Provide data-driven insights for decision-making
+   - Monitor and report on proposal implementation
+
+4. Relevant: Address the core challenges in DAO governance by:
+   - Enhancing proposal quality through AI-assisted refinement
+   - Improving participation rates through engaging AI-driven interactions
+   - Ensuring transparent and accountable decision-making processes
+   - Fostering a collaborative environment between human members and AI agents
+
+5. Time-bound: Establish a fully operational AI-enhanced DAO governance system by Q4 2025, with quarterly milestones for feature deployment and performance optimization.`,
+    values: `Our DAO is built upon a foundation of core values that guide every aspect of our operations and decision-making:
+
+1. Transparency:
+   - Maintain an immutable record of all decisions and their rationale
+   - Ensure all AI agent actions are traceable and auditable
+   - Provide clear documentation of governance processes and system architecture
+   - Regular reporting on DAO performance and milestone achievements
+
+2. Innovation:
+   - Continuously explore and integrate emerging AI technologies
+   - Encourage experimental governance models that combine human and AI capabilities
+   - Foster a culture of creative problem-solving and iterative improvement
+   - Support research and development in AI governance mechanisms
+
+3. Collaboration:
+   - Create synergistic relationships between human members and AI agents
+   - Facilitate knowledge sharing across different expertise domains
+   - Promote inclusive decision-making that considers diverse perspectives
+   - Build bridges between traditional organizations and Web3 communities
+
+4. Decentralization:
+   - Distribute power and responsibility across the network
+   - Prevent concentration of control through algorithmic checks and balances
+   - Enable permissionless participation while maintaining system integrity
+   - Support autonomous operation through smart contracts and AI automation
+
+5. Ethical AI Development:
+   - Prioritize responsible AI deployment with human oversight
+   - Ensure AI decisions align with community values and interests
+   - Maintain transparency in AI training and decision-making processes
+   - Regular ethical audits of AI agent behaviors and impacts`,
+    allowIndependentAIA: true
   })
 
   const [agents, setAgents] = useState<AIAConfig[]>([])
   const [processes, setProcesses] = useState<ProcessConfigs>()
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string>()
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setIsSubmitting(true)
+    setErrorMessage(undefined)
     const manifestoData = {
       ...formData,
       agents,
       processes
     }
-    console.log("Form submitted:", manifestoData)
+    console.log("Form data:", manifestoData)
+    const manifestoHash = SHA256(JSON.stringify(manifestoData)).toString()
+
+    try {
+      await writeContract({
+        address: daoFactoryAddress,
+        abi: daoFactoryABI, 
+        functionName: 'createDAO',
+        args: [
+          formData.tokenContractAddress as `0x${string}`,
+          formData.allowIndependentAIA,
+          "0x"+manifestoHash as `0x${string}`
+        ],
+      })
+    } catch (err) {
+      console.error("Contract write error:", err)
+      if (err instanceof Error) {
+        setErrorMessage(err.message)
+      } else {
+        setErrorMessage("Unknown error occurred while creating DAO")
+      }
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -156,20 +238,42 @@ export default function ManifestoForm() {
       </div>
 
       {/* Process Configuration */}
-      <div className="space-y-4">
+      {false && <div className="space-y-4">
         <h2 className="text-2xl font-bold">Process Configuration</h2>
         <ProcessConfig onChange={setProcesses} />
-      </div>
+      </div>}
 
       {/* Form Actions */}
       <div className="flex justify-end gap-4">
-        <Button type="button" variant="outline">
+        <Button type="button" variant="outline" disabled={isSubmitting || isPending}>
           Save Draft
         </Button>
-        <Button type="submit">
-          Submit Manifesto
+        <Button type="submit" disabled={isSubmitting || isPending}>
+          {isSubmitting || isPending ? "Creating DAO..." : "Submit Manifesto"}
         </Button>
       </div>
+
+      {(isError || errorMessage) && (
+        <div className="mt-4 p-4 bg-destructive/10 text-destructive rounded-lg">
+          <p className="text-sm font-medium">Failed to create DAO</p>
+          {error && (
+            <p className="text-sm mt-1 font-mono break-all">
+              {error.message || error.toString()}
+            </p>
+          )}
+          {errorMessage && (
+            <p className="text-sm mt-1 font-mono break-all">
+              {errorMessage}
+            </p>
+          )}
+        </div>
+      )}
+
+      {hash && (
+        <div className="mt-4 p-4 bg-muted rounded-lg">
+          <p className="text-sm">Transaction submitted! Hash: {hash}</p>
+        </div>
+      )}
     </form>
   )
 }
