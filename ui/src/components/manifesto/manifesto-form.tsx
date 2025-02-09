@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, useRef } from "react"
-import { useWriteContract } from 'wagmi'
+import { useState, useRef, useEffect } from "react"
+import { useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
 import { SHA256 } from 'crypto-js'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -29,6 +29,7 @@ interface AIAConfig {
 export default function ManifestoForm() {
   const router = useRouter()
   const { data: hash, writeContract, isPending, isError, error } = useWriteContract()
+  const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash, })
   const addDAO = useDAOStore(state => state.addDAO)
   const daos = useDAOStore(state => state.daos)
   const [formData, setFormData] = useState({
@@ -117,10 +118,17 @@ export default function ManifestoForm() {
         abi: daoFactoryABI,
         address: daoFactoryAddress,
         functionName: 'createDAO',
-        args: [formData.tokenContractAddress, formData.allowIndependentAIA, contentHash]
+        args: [formData.tokenContractAddress, formData.allowIndependentAIA, "0x"+contentHash]
       })
+    } catch (err: any) {
+      setErrorMessage(err.message || "Failed to create DAO")
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
 
-      // Add to store
+  useEffect(() => {
+    if (!isConfirming && hash) {
       const newDAO = {
         id: daos.length + 1,
         name: formData.name,
@@ -147,12 +155,8 @@ export default function ManifestoForm() {
       
       addDAO(newDAO)
       router.push('/daos/' + newDAO.id)
-    } catch (err: any) {
-      setErrorMessage(err.message || "Failed to create DAO")
-    } finally {
-      setIsSubmitting(false)
     }
-  }
+  }, [isConfirming, hash])
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
@@ -297,11 +301,11 @@ export default function ManifestoForm() {
         </div>
       )}
 
-      {hash && (
-        <div className="mt-4 p-4 bg-muted rounded-lg">
-          <p className="text-sm">Transaction submitted! Hash: {hash}</p>
-        </div>
-      )}
+      <div className="mt-4 flex flex-col gap-2">
+        {hash && <div className="bg-primary/10 p-4 rounded-lg">Transaction Hash: {hash}</div>}
+        {isConfirming && <div className="bg-info/10 p-4 rounded-lg">Waiting for confirmation...</div>}
+        {isConfirmed && <div className="bg-success/10 p-4 rounded-lg">Transaction confirmed.</div>}
+      </div>
     </form>
   )
 }
