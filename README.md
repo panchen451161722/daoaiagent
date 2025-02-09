@@ -16,7 +16,7 @@ Revolutionizing DAO Governance with AI - Powered Proposal Management
 - **[CDP AgentKit](https://docs.cdp.coinbase.com/)**: Agent toolkit for on-chain interaction. DAO Agents can update proposal status to the blockchain.
 - **[The Graph](https://thegraph.com/)**: Indexing protocol for querying blockchain data.
 - **[Solidity](https://soliditylang.org/)**: Smart contract programming language for interacting with the blockchain.
-- **[Next.js/React](https://nextjs.org/)/[React](https://reactjs.org/)**: UI development. Next.js is a React framework that provides server-side rendering, static site generation, and other features to build modern web applications. React is a JavaScript library for building user interfaces, which allows for the creation of reusable UI components.
+- **[Next.js/React](https://nextjs.org/)**: UI development. Next.js is a React framework that provides server-side rendering, static site generation, and other features to build modern web applications. React is a JavaScript library for building user interfaces, which allows for the creation of reusable UI components.
 - **[shadcn](https://ui.shadcn.com/)**: UI framework. It offers a collection of reusable UI components that can be easily customized to fit the design requirements of the project.
 - **[connectKit](https://docs.family.co/connectkit)/[wagmi](https://wagmi.sh/)**: Blockchain connection. ConnectKit is a wallet connection library that simplifies the process of connecting users' wallets to the application. Wagmi is a React Hooks library for Ethereum that provides a set of tools for interacting with the blockchain.
 
