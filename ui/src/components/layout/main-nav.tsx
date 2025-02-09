@@ -12,6 +12,7 @@ import {
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu"
+import { Button } from "@/components/ui/button"
 
 const navItems = [
   {
@@ -64,62 +65,67 @@ export function MainNav() {
   const pathname = usePathname()
 
   return (
-    <div className="flex items-center space-x-6 lg:space-x-8">
-      <Link
-        href="/"
-        className="ml-6 text-xl font-bold"
-      >
-        <span className="relative inline-block">
-          <span className="absolute -top-3 left-0 w-full text-xs font-normal text-muted-foreground text-center">/əˈlaɪv/</span>
-          Ailve
-        </span> DAO
-      </Link>
-      <NavigationMenu>
-        <NavigationMenuList>
-          {navItems.map((item) => (
-            <NavigationMenuItem key={item.title}>
-              <NavigationMenuTrigger
-                className={cn(
-                  item.pattern.test(pathname) && "text-foreground"
-                )}
-              >
-                {item.title}
-              </NavigationMenuTrigger>
-              <NavigationMenuContent>
-                <ul className="grid gap-3 p-4 w-[400px]">
-                  <li className="row-span-3">
-                    <div className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none">
-                      <div className="mb-2 mt-4 text-lg font-medium">
-                        {item.title}
+    <div className="flex items-center justify-between w-full">
+      <div className="flex items-center space-x-6 lg:space-x-8">
+        <Link
+          href="/"
+          className="ml-6 text-xl font-bold"
+        >
+          <span className="relative inline-block">
+            <span className="absolute -top-3 left-0 w-full text-xs font-normal text-muted-foreground text-center">/əˈlaɪv/</span>
+            A<span className="text-primary">i</span>lve
+          </span> DAO
+        </Link>
+        <NavigationMenu>
+          <NavigationMenuList>
+            {navItems.map((item) => (
+              <NavigationMenuItem key={item.title}>
+                <NavigationMenuTrigger
+                  className={cn(
+                    item.pattern.test(pathname) && "text-foreground"
+                  )}
+                >
+                  {item.title}
+                </NavigationMenuTrigger>
+                <NavigationMenuContent>
+                  <ul className="grid gap-3 p-4 w-[400px]">
+                    <li className="row-span-3">
+                      <div className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none">
+                        <div className="mb-2 mt-4 text-lg font-medium">
+                          {item.title}
+                        </div>
+                        <p className="text-sm leading-tight text-muted-foreground">
+                          {item.description}
+                        </p>
                       </div>
-                      <p className="text-sm leading-tight text-muted-foreground">
-                        {item.description}
-                      </p>
-                    </div>
-                  </li>
-                  {item.children.map((child) => (
-                    <li key={child.href}>
-                      <NavigationMenuLink asChild>
-                        <Link
-                          href={child.href}
-                          className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                        >
-                          <div className="text-sm font-medium leading-none">
-                            {child.title}
-                          </div>
-                          <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                            {child.description}
-                          </p>
-                        </Link>
-                      </NavigationMenuLink>
                     </li>
-                  ))}
-                </ul>
-              </NavigationMenuContent>
-            </NavigationMenuItem>
-          ))}
-        </NavigationMenuList>
-      </NavigationMenu>
+                    {item.children.map((child) => (
+                      <li key={child.href}>
+                        <NavigationMenuLink asChild>
+                          <Link
+                            href={child.href}
+                            className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                          >
+                            <div className="text-sm font-medium leading-none">
+                              {child.title}
+                            </div>
+                            <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+                              {child.description}
+                            </p>
+                          </Link>
+                        </NavigationMenuLink>
+                      </li>
+                    ))}
+                  </ul>
+                </NavigationMenuContent>
+              </NavigationMenuItem>
+            ))}
+          </NavigationMenuList>
+        </NavigationMenu>
+        <Button variant="default" asChild className="mr-6">
+          <Link href="/aias/create">Join</Link>
+        </Button>
+      </div>
     </div>
   )
 }
