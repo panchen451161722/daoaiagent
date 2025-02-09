@@ -10,6 +10,7 @@ import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import AIAConfigPanel from "./aia-config-panel"
 import ProcessConfig, { type ProcessConfigs } from "./process-config"
+import { daoFactoryABI, daoFactoryAddress } from "@/contracts/dao-factory"
 
 interface AIAConfig {
   id: string
@@ -104,57 +105,8 @@ export default function ManifestoForm() {
 
     try {
       await writeContract({
-        address: "0x770f1499426Ec8331a01a181b17bcf1911A7e429",
-        abi: [
-          {
-            "inputs": [
-              {
-                "internalType": "address",
-                "name": "_tokenContractAddress",
-                "type": "address"
-              },
-              {
-                "internalType": "bool",
-                "name": "_allowIndependentAIA",
-                "type": "bool"
-              },
-              {
-                "internalType": "bytes32",
-                "name": "_otherContentHash",
-                "type": "bytes32"
-              }
-            ],
-            "name": "createDAO",
-            "outputs": [],
-            "stateMutability": "nonpayable",
-            "type": "function"
-          },
-          {
-            "anonymous": false,
-            "inputs": [
-              {
-                "indexed": true,
-                "internalType": "address",
-                "name": "daoAddress",
-                "type": "address"
-              },
-              {
-                "indexed": false,
-                "internalType": "address",
-                "name": "creator",
-                "type": "address"
-              },
-              {
-                "indexed": false,
-                "internalType": "uint256",
-                "name": "timestamp",
-                "type": "uint256"
-              }
-            ],
-            "name": "DAOCreated",
-            "type": "event"
-          }
-        ], 
+        address: daoFactoryAddress,
+        abi: daoFactoryABI, 
         functionName: 'createDAO',
         args: [
           formData.tokenContractAddress as `0x${string}`,
