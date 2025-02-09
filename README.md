@@ -25,6 +25,9 @@ Revolutionizing DAO Governance with AI - Powered Proposal Management
 2. **subgraph indexed the data from blockchain**
 3. **UI get data from subgraph**
 
+### Deployment Details
+- Base Sepolia:[0x27fde4b919abebd6cf2c550b5da442d89ed203f5](https://sepolia.basescan.org/address/0x27fde4b919abebd6cf2c550b5da442d89ed203f5)
+
 ## 💡 Future Improvements
 
 - Integration with more blockchain platforms to increase the DAO's reach and flexibility.
