@@ -10,18 +10,21 @@ interface ProposalFormProps {
   daoId: string
 }
 
+// Default proposal data for development
+const defaultFormData = {
+  title: "New Community Initiative",
+  type: "governance",
+  summary: "This proposal aims to improve community engagement through...",
+  details: "We propose to implement the following initiatives:\n1. Weekly community calls\n2. Monthly governance workshops\n3. Educational content series",
+  beneficiary: "0x1234567890123456789012345678901234567890",
+  fundingAmount: "50000",
+  releasePercentage: "25",
+  fundingPlan: "Total budget: 50,000 USDC\n- Community management: 20,000 USDC\n- Content creation: 15,000 USDC\n- Technical infrastructure: 10,000 USDC\n- Contingency: 5,000 USDC",
+  expectedOutcome: "Expected outcomes include:\n- 50% increase in active participation\n- Creation of 12 educational modules\n- Establishment of regular governance processes"
+}
+
 export default function ProposalForm({ daoId }: ProposalFormProps) {
-  const [formData, setFormData] = useState({
-    title: "",
-    type: "treasury",
-    summary: "",
-    details: "",
-    beneficiary: "",
-    fundingAmount: "",
-    releasePercentage: "",
-    fundingPlan: "",
-    expectedOutcome: "",
-  })
+  const [formData, setFormData] = useState(defaultFormData)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
