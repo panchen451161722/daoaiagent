@@ -8,9 +8,12 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
+import { useRouter } from "next/navigation"
 import AIAConfigPanel from "./aia-config-panel"
 import ProcessConfig, { type ProcessConfigs } from "./process-config"
 import { daoFactoryABI, daoFactoryAddress } from "@/contracts/dao-factory"
+import { useDAOStore } from "@/lib/store/dao"
+import type { AIA as StoreAIA } from "@/lib/store/dao"
 
 interface AIAConfig {
   id: string
@@ -24,7 +27,10 @@ interface AIAConfig {
 }
 
 export default function ManifestoForm() {
+  const router = useRouter()
   const { data: hash, writeContract, isPending, isError, error } = useWriteContract()
+  const addDAO = useDAOStore(state => state.addDAO)
+  const daos = useDAOStore(state => state.daos)
   const [formData, setFormData] = useState({
     name: "My DAO",
     description: "A decentralized organization powered by AI agents",
@@ -94,33 +100,55 @@ export default function ManifestoForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
-    setErrorMessage(undefined)
-    const manifestoData = {
-      ...formData,
-      agents,
-      processes
-    }
-    console.log("Form data:", manifestoData)
-    const manifestoHash = SHA256(JSON.stringify(manifestoData)).toString()
+    setErrorMessage("")
 
     try {
+      const contentHash = SHA256(JSON.stringify({
+        name: formData.name,
+        description: formData.description,
+        logo: formData.logo,
+        objective: formData.objective,
+        values: formData.values,
+        agents,
+        processes
+      })).toString()
+
       await writeContract({
+        abi: daoFactoryABI,
         address: daoFactoryAddress,
-        abi: daoFactoryABI, 
         functionName: 'createDAO',
-        args: [
-          formData.tokenContractAddress as `0x${string}`,
-          formData.allowIndependentAIA,
-          "0x"+manifestoHash as `0x${string}`
-        ],
+        args: [formData.tokenContractAddress, formData.allowIndependentAIA, contentHash]
       })
-    } catch (err) {
-      console.error("Contract write error:", err)
-      if (err instanceof Error) {
-        setErrorMessage(err.message)
-      } else {
-        setErrorMessage("Unknown error occurred while creating DAO")
+
+      // Add to store
+      const newDAO = {
+        id: daos.length + 1,
+        name: formData.name,
+        description: formData.description,
+        logo: formData.logo,
+        treasury: formData.tokenContractAddress,
+        members: 1,
+        activeProposals: 0,
+        objective: formData.objective,
+        values: formData.values,
+        aias: agents.map(agent => ({
+          id: agent.id,
+          name: agent.role,
+          avatar: agent.emoji,
+          type: agent.type,
+          status: 'Active'
+        } as StoreAIA)),
+        processes: {
+          proposal: { enabled: true, params: {} },
+          treasury: { enabled: true, params: {} },
+          membership: { enabled: true, params: {} }
+        }
       }
+      
+      addDAO(newDAO)
+      router.push('/daos/' + newDAO.id)
+    } catch (err: any) {
+      setErrorMessage(err.message || "Failed to create DAO")
     } finally {
       setIsSubmitting(false)
     }

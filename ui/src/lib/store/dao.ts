@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { persist, createJSONStorage } from 'zustand/middleware'
 
 export interface AIA {
   id: string
@@ -438,6 +438,12 @@ export const useDAOStore = create<DAOStore>()(
     }),
     {
       name: 'dao-storage',
+      storage: createJSONStorage(() => localStorage),
+      partialize: (state) => ({ 
+        daos: state.daos,
+        proposals: state.proposals,
+        meetings: state.meetings
+      }),
     }
   )
 )
