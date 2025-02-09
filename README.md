@@ -1,8 +1,6 @@
 # Alive DAO
 Revolutionizing DAO Governance with AI - Powered Proposal Management
 
-# DAO AI Agent
-
 ## 🚀 Features
 
 - **Intelligent Decision Making**: The DAO AI Agent can analyze complex data and make informed decisions for the DAO, optimizing resource allocation and strategy planning.
