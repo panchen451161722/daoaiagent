@@ -46,6 +46,47 @@ export default function CreateAIAPage() {
           <p className="text-muted-foreground mt-2">Configure a new AI Agent for your DAO</p>
         </div>
 
+              <div>
+            <h2 className="text-xl font-semibold">Type</h2>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
+                  {[
+                    {
+                      value: "Individual",
+                      icon: "👤",
+                      title: "Individual",
+                      description: "Personal AI agent that represents you in the DAO, making decisions based on your preferences"
+                    },
+                    {
+                      value: "Internal",
+                      icon: "🔒",
+                      title: "Internal",
+                      description: "DAO specificAI agent that serves specific roles within your DAO, fixed and immutable"
+                    },
+                    {
+                      value: "Public",
+                      icon: "🌎",
+                      title: "Public",
+                      description: "Public-owned AI agent that could upgrade and evolve over time"
+                    }
+                  ].map((item) => (
+                    <div
+                      key={item.value}
+                      className={[
+                        "flex flex-col p-4 border rounded-lg cursor-pointer transition-colors",
+                        type === item.value ? "border-primary bg-primary/5" : "hover:border-primary/50",
+                      ].join(" ")}
+                      onClick={() => setType(item.value)}
+                    >
+                      <div className="flex items-center mb-2">
+                        <div className="text-3xl mr-2">{item.icon}</div>
+                        <h3 className="font-semibold">{item.title}</h3>
+                      </div>
+                      <p className="text-sm text-muted-foreground">{item.description}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
         <div className="space-y-6">
           {/* Basic Information */}
           <div className="space-y-4">
@@ -66,14 +107,6 @@ export default function CreateAIAPage() {
                   placeholder="e.g., Responsible for technical risk assessment and implementation feasibility."
                   className="h-20"
                 />
-              </div>
-              <div>
-                <Label>Type</Label>
-                <ToggleGroup type="single" value={type} onValueChange={(value) => value && setType(value)} className="justify-start mt-2">
-                  <ToggleGroupItem value="Internal">🔒 Internal</ToggleGroupItem>
-                  <ToggleGroupItem value="Public">🌎 Public</ToggleGroupItem>
-                  <ToggleGroupItem value="Individual">👤 Individual</ToggleGroupItem>
-                </ToggleGroup>
               </div>
             </div>
           </div>
