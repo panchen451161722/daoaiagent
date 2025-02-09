@@ -299,6 +299,7 @@ class ContractAgent(BaseAgent):
                 args=review_args,
             ).wait()
         except Exception as e:
+            raise e
             return f"Error executing review_proposal: {e}"
 
         return f"""Reviewed proposal {proposal_id} with decision {approve} on network {wallet.network_id}.
