@@ -33,12 +33,17 @@ export default function DAODetailsPage({ params }: PageProps) {
               <h1 className="text-3xl font-bold">{dao.name}</h1>
               <p className="text-muted-foreground mt-2">{dao.description}</p>
             </div>
-            {dao.logo && (
-              <Avatar className="h-20 w-20">
-                <AvatarImage src={dao.logo} alt={dao.name} />
-                <AvatarFallback>{dao.name[0]}</AvatarFallback>
-              </Avatar>
-            )}
+            <div className="flex items-start gap-4">
+              {dao.logo && (
+                <Avatar className="h-20 w-20">
+                  <AvatarImage src={dao.logo} alt={dao.name} />
+                  <AvatarFallback>{dao.name[0]}</AvatarFallback>
+                </Avatar>
+              )}
+              <Link href={`/daos/${id}/proposals/create`}>
+                <Button>Create Proposal</Button>
+              </Link>
+            </div>
           </div>
 
           <div className="grid grid-cols-3 gap-4">
@@ -104,9 +109,6 @@ export default function DAODetailsPage({ params }: PageProps) {
           <div className="space-y-4">
             <div className="flex justify-between items-center">
               <h2 className="text-xl font-semibold">AI Agents</h2>
-              <Link href={`/aias/create?dao=${id}`}>
-                <Button variant="outline">Add AIA</Button>
-              </Link>
             </div>
             <div className="grid gap-4">
               {dao.aias.map((aia) => (
@@ -153,9 +155,6 @@ export default function DAODetailsPage({ params }: PageProps) {
                         {process.enabled ? "Enabled" : "Disabled"}
                       </p>
                     </div>
-                    <Button variant="outline" size="sm">
-                      Configure
-                    </Button>
                   </div>
                   <div className="grid gap-2">
                     {Object.entries(process.params).map(([paramKey, value]) => (
