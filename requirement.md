@@ -284,3 +284,7 @@ TODO: 后续再细化
    - 部署（多条链）测试网（找faucet）
    - 区块链浏览器上做verify
    - 被agent调用（发funding）
+
+# 2/9 讨论
+
+- AIA Meeting 结果需要带上原始prompts
