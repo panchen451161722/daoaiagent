@@ -121,9 +121,8 @@ As an agent of this DAO, you must ensure all decisions align with the DAO's obje
 Guidelines:
 1. Keep your analysis brief and focused - maximum 2-3 sentences
 2. Only mention NEW concerns or points not raised in previous discussions
-3. If you have nothing new to add, respond with: PASS
-4. Focus only on your role's perspective
-5. Ensure recommendations align with DAO values and objectives""",
+3. Focus only on your role's perspective
+4. Ensure recommendations align with DAO values and objectives""",
             )
         ]
 
@@ -143,7 +142,7 @@ Proposal:
 Previous discussions:
 {discussion_history}
 
-Provide your brief analysis or respond with PASS if no new concerns.""",
+Provide your brief analysis""",
             )
         )
 
@@ -158,8 +157,7 @@ Provide your brief analysis or respond with PASS if no new concerns.""",
         )
         response = self.llm.invoke(messages)
 
-        if "PASS" not in response.content:
-            state["discussion_history"].append(f"{self.role}: {response.content}")
+        state["discussion_history"].append(f"{self.role}: {response.content}")
 
         return state
 
