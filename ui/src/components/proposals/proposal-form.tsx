@@ -1,10 +1,15 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useWriteContract, useWaitForTransactionReceipt } from 'wagmi'
+import { SHA256 } from 'crypto-js'
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
+import { useRouter } from "next/navigation"
+import { useDAOStore } from "@/lib/store/dao"
+import { daoFactoryABI, daoFactoryAddress } from "@/contracts/dao-factory"
 
 interface ProposalFormProps {
   daoId: string
@@ -24,13 +29,61 @@ const defaultFormData = {
 }
 
 export default function ProposalForm({ daoId }: ProposalFormProps) {
+  const router = useRouter()
+  const { data: hash, writeContract, isPending, isError, error } = useWriteContract()
+  const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash, })
+  const addProposal = useDAOStore(state => state.addProposal)
+  const proposals = useDAOStore(state => state.proposals)
   const [formData, setFormData] = useState(defaultFormData)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string>()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // TODO: Implement form submission
-    console.log(formData)
+    setIsSubmitting(true)
+    setErrorMessage("")
+
+    try {
+      const contentHash = SHA256(JSON.stringify(formData)).toString()
+      await writeContract({
+        abi: daoFactoryABI,
+        address: daoFactoryAddress,
+        // functionName: 'createProposal',
+        // args: [daoId, "0x"+contentHash]
+        functionName: 'createDAO',
+        args: ["0x1234567890123456789012345678901234567890", false,"0x"+contentHash]
+      })
+    } catch (err: any) {
+      setErrorMessage(err.message || "Failed to create proposal")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
+
+  useEffect(() => {
+    if (!isConfirming && hash) {
+      addProposal({
+        id: proposals.length + 1,
+        daoId: parseInt(daoId),
+        title: formData.title,
+        type: formData.type as 'treasury' | 'research' | 'governance' | 'technical',
+        status: 'Proposed',
+        created: new Date().toISOString(),
+        creator: { name: 'Current User' },
+        beneficiary: { name: formData.beneficiary },
+        funding: {
+          amount: parseInt(formData.fundingAmount),
+          currency: 'USDC',
+          releasePercentage: parseInt(formData.releasePercentage)
+        },
+        summary: formData.summary,
+        details: formData.details,
+        fundingPlan: formData.fundingPlan,
+        expectedOutcome: formData.expectedOutcome
+      })
+      // router.push(`/daos/${daoId}/proposals`)
+    }
+  }, [isConfirming, hash, daoId, formData, proposals, addProposal, router])
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
@@ -166,11 +219,35 @@ export default function ProposalForm({ daoId }: ProposalFormProps) {
         </div>
       </div>
 
-      {/* Submit Button */}
-      <div className="flex justify-end">
-        <Button type="submit" size="lg">
-          Submit Proposal
-        </Button>
+      {/* Submit Button and Status Messages */}
+      <div className="space-y-4">
+        <div className="flex justify-end">
+          <Button type="submit" size="lg" disabled={isSubmitting}>
+            {isSubmitting ? 'Submitting...' : 'Submit Proposal'}
+          </Button>
+        </div>
+      </div>
+
+      {(isError || errorMessage) && (
+        <div className="mt-4 p-4 bg-destructive/10 text-destructive rounded-lg">
+          <p className="text-sm font-medium">Failed to create DAO</p>
+          {error && (
+            <p className="text-sm mt-1 font-mono break-all">
+              {error.message || error.toString()}
+            </p>
+          )}
+          {errorMessage && (
+            <p className="text-sm mt-1 font-mono break-all">
+              {errorMessage}
+            </p>
+          )}
+        </div>
+      )}
+
+      <div className="mt-4 flex flex-col gap-2">
+        {hash && <div className="bg-primary/10 p-4 rounded-lg">Transaction Hash: {hash}</div>}
+        {isConfirming && <div className="bg-info/10 p-4 rounded-lg">Waiting for confirmation...</div>}
+        {isConfirmed && <div className="bg-success/10 p-4 rounded-lg">Transaction confirmed.</div>}
       </div>
     </form>
   )
