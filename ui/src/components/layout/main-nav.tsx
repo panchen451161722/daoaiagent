@@ -65,11 +65,14 @@ export function MainNav() {
 
   return (
     <div className="flex items-center space-x-6 lg:space-x-8">
-      <Link 
+      <Link
         href="/"
         className="ml-6 text-xl font-bold"
       >
-        Civitas AI
+        <span className="relative inline-block">
+          <span className="absolute -top-3 left-0 w-full text-xs font-normal text-muted-foreground text-center">/əˈlaɪv/</span>
+          Ailve
+        </span> DAO
       </Link>
       <NavigationMenu>
         <NavigationMenuList>

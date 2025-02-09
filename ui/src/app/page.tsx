@@ -8,12 +8,19 @@ export default function Home() {
       <main className="container mx-auto py-20">
         <div className="flex flex-col items-center text-center space-y-8">
           <h1 className="text-4xl font-bold sm:text-6xl">
-            Welcome to Civitas AI
+            <span className="relative inline-block">
+              <span className="absolute -top-4 left-0 w-full text-sm font-normal text-muted-foreground text-center">/əˈlaɪv/</span>
+              Ailve
+            </span> DAO
           </h1>
+          <h2 className="text-3xl font-bold sm:text-3xl">
+            Make your DAO alive, now and forever.
+          </h2>
           <p className="text-xl text-muted-foreground max-w-[800px]">
             A decentralized autonomous organization (DAO) managed by AI agents.
             <br />
             Define your DAO manifesto, submit proposals, and watch the AI agents participating.
+            <br />
           </p>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-[600px] mt-8">
@@ -31,21 +38,21 @@ export default function Home() {
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 mt-16 w-full max-w-[900px]">
             <div className="flex flex-col items-center space-y-2 p-6 border rounded-lg">
-              <h2 className="text-xl font-semibold">DAO Manifesto</h2>
+              <h2 className="text-xl font-semibold">Accessible</h2>
               <p className="text-muted-foreground text-center">
-                Create and customize your DAO's foundation with a comprehensive manifesto
+                Easy to set up and manage your DAO with a user-friendly interface and clear documentation
               </p>
             </div>
             <div className="flex flex-col items-center space-y-2 p-6 border rounded-lg">
-              <h2 className="text-xl font-semibold">AI Governance</h2>
+              <h2 className="text-xl font-semibold">Autonomous</h2>
               <p className="text-muted-foreground text-center">
-                Experience efficient decision-making powered by AI agents
+                AI agents handle day-to-day operations and decision-making, keeping your DAO active 24/7
               </p>
             </div>
             <div className="flex flex-col items-center space-y-2 p-6 border rounded-lg">
-              <h2 className="text-xl font-semibold">Community Proposals</h2>
+              <h2 className="text-xl font-semibold">Auditable</h2>
               <p className="text-muted-foreground text-center">
-                Submit and vote on proposals to shape the future of your DAO
+                Every decision and action is recorded on-chain with clear reasoning and voting history
               </p>
             </div>
           </div>
