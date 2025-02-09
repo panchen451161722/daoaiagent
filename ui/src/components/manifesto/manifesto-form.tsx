@@ -1,6 +1,8 @@
 "use client"
 
 import { useState, useRef } from "react"
+import { useWriteContract } from 'wagmi'
+import { SHA256 } from 'crypto-js'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -21,6 +23,7 @@ interface AIAConfig {
 }
 
 export default function ManifestoForm() {
+  const { data: hash, writeContract, isPending, isError, error } = useWriteContract()
   const [formData, setFormData] = useState({
     name: "My DAO",
     description: "A decentralized organization powered by AI agents",
@@ -84,15 +87,91 @@ export default function ManifestoForm() {
 
   const [agents, setAgents] = useState<AIAConfig[]>([])
   const [processes, setProcesses] = useState<ProcessConfigs>()
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string>()
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setIsSubmitting(true)
+    setErrorMessage(undefined)
     const manifestoData = {
       ...formData,
       agents,
       processes
     }
-    console.log("Form submitted:", manifestoData)
+    console.log("Form data:", manifestoData)
+    const manifestoHash = SHA256(JSON.stringify(manifestoData)).toString()
+
+    try {
+      await writeContract({
+        address: "0x770f1499426Ec8331a01a181b17bcf1911A7e429",
+        abi: [
+          {
+            "inputs": [
+              {
+                "internalType": "address",
+                "name": "_tokenContractAddress",
+                "type": "address"
+              },
+              {
+                "internalType": "bool",
+                "name": "_allowIndependentAIA",
+                "type": "bool"
+              },
+              {
+                "internalType": "bytes32",
+                "name": "_otherContentHash",
+                "type": "bytes32"
+              }
+            ],
+            "name": "createDAO",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+          },
+          {
+            "anonymous": false,
+            "inputs": [
+              {
+                "indexed": true,
+                "internalType": "address",
+                "name": "daoAddress",
+                "type": "address"
+              },
+              {
+                "indexed": false,
+                "internalType": "address",
+                "name": "creator",
+                "type": "address"
+              },
+              {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "timestamp",
+                "type": "uint256"
+              }
+            ],
+            "name": "DAOCreated",
+            "type": "event"
+          }
+        ], 
+        functionName: 'createDAO',
+        args: [
+          formData.tokenContractAddress as `0x${string}`,
+          formData.allowIndependentAIA,
+          "0x"+manifestoHash as `0x${string}`
+        ],
+      })
+    } catch (err) {
+      console.error("Contract write error:", err)
+      if (err instanceof Error) {
+        setErrorMessage(err.message)
+      } else {
+        setErrorMessage("Unknown error occurred while creating DAO")
+      }
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -214,13 +293,35 @@ export default function ManifestoForm() {
 
       {/* Form Actions */}
       <div className="flex justify-end gap-4">
-        <Button type="button" variant="outline">
+        <Button type="button" variant="outline" disabled={isSubmitting || isPending}>
           Save Draft
         </Button>
-        <Button type="submit">
-          Submit Manifesto
+        <Button type="submit" disabled={isSubmitting || isPending}>
+          {isSubmitting || isPending ? "Creating DAO..." : "Submit Manifesto"}
         </Button>
       </div>
+
+      {(isError || errorMessage) && (
+        <div className="mt-4 p-4 bg-destructive/10 text-destructive rounded-lg">
+          <p className="text-sm font-medium">Failed to create DAO</p>
+          {error && (
+            <p className="text-sm mt-1 font-mono break-all">
+              {error.message || error.toString()}
+            </p>
+          )}
+          {errorMessage && (
+            <p className="text-sm mt-1 font-mono break-all">
+              {errorMessage}
+            </p>
+          )}
+        </div>
+      )}
+
+      {hash && (
+        <div className="mt-4 p-4 bg-muted rounded-lg">
+          <p className="text-sm">Transaction submitted! Hash: {hash}</p>
+        </div>
+      )}
     </form>
   )
 }
