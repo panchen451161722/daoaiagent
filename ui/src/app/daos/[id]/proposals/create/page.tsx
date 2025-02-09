@@ -17,16 +17,12 @@ export default function CreateProposalPage({ params }: PageProps) {
   const { getDAOById } = useDAOStore()
   const dao = getDAOById(Number(id))
 
-  if (!dao) {
-    return <div>DAO not found</div>
-  }
-  
   return (
     <div className="container mx-auto py-10">
       <div className="max-w-4xl mx-auto space-y-8">
+        {/* {dao && (<div>
         <h1 className="text-3xl font-bold">Create Proposal</h1>
 
-        {/* DAO Information */}
         <Card className="p-6">
           <div className="flex items-start gap-4">
             {dao.logo && (
@@ -54,7 +50,7 @@ export default function CreateProposalPage({ params }: PageProps) {
               </div>
             </div>
           </div>
-        </Card>
+        </Card></div>)} */}
 
         {/* Proposal Form */}
         <ProposalForm daoId={id} />
