@@ -27,6 +27,8 @@ Revolutionizing DAO Governance with AI - Powered Proposal Management
 3. **UI get data from subgraph**
 
 ### Deployment Details
+
+![System Architecture](ui/public/arch.drawio.svg)
 - Base Sepolia:[0x27fde4b919abebd6cf2c550b5da442d89ed203f5](https://sepolia.basescan.org/address/0x27fde4b919abebd6cf2c550b5da442d89ed203f5)
 
 ## 💡 Future Improvements
