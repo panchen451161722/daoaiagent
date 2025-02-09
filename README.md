@@ -14,11 +14,16 @@ Revolutionizing DAO Governance with AI - Powered Proposal Management
 ### Technology Stack
 
 - **[Python](https://www.python.org/)**: Core programming language for implementing the AI algorithms and data processing.
-- **[TensorFlow](https://www.tensorflow.org/)**: Machine learning framework for training and deploying the AI models.
 - **[Solidity](https://soliditylang.org/)**: Smart contract programming language for interacting with the blockchain.
-- **[Ethereum](https://ethereum.org/)**: Blockchain platform for ensuring transparency and immutability of the DAO's operations.
-- **[Web3.js](https://web3js.readthedocs.io/)**: JavaScript library for interacting with the Ethereum blockchain.
-- **[Flask](https://flask.palletsprojects.com/)**: Web framework for building the API endpoints and serving the AI agent.
+- **[Next.js/React](https://nextjs.org/)/[React](https://reactjs.org/)**: UI development. Next.js is a React framework that provides server-side rendering, static site generation, and other features to build modern web applications. React is a JavaScript library for building user interfaces, which allows for the creation of reusable UI components.
+- **[shadcn](https://ui.shadcn.com/)**: UI framework. It offers a collection of reusable UI components that can be easily customized to fit the design requirements of the project.
+- **[connectKit](https://docs.family.co/connectkit)/[wagmi](https://wagmi.sh/)**: Blockchain connection. ConnectKit is a wallet connection library that simplifies the process of connecting users' wallets to the application. Wagmi is a React Hooks library for Ethereum that provides a set of tools for interacting with the blockchain.
+
+### Development Workflow
+
+1. **UI submit data directly to blockchain**
+2. **subgraph indexed the data from blockchain**
+3. **UI get data from subgraph**
 
 ## 💡 Future Improvements
 
