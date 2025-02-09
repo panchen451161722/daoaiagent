@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Dict, List, Literal, TypedDict
 
-from cdp import Wallet
+from cdp import MnemonicSeedPhrase, Wallet
 from cdp_langchain.agent_toolkits import CdpToolkit
 from cdp_langchain.tools import CdpTool
 from cdp_langchain.utils import CdpAgentkitWrapper
@@ -260,15 +260,18 @@ class ContractAgent(BaseAgent):
         self.toolkit = CdpToolkit.from_cdp_agentkit_wrapper(self.cdp)
         # Get available tools and add review proposal tool
         self.tools = [review_proposal_tool]
+        self.wallet = Wallet.import_wallet(
+            MnemonicSeedPhrase(os.getenv("MNEMONIC_PHRASE"))
+        )
 
     def execute_contract(self, state: AgentState) -> AgentState:
         if state["final_decision"]["decision"] == "APPROVE":
             state["contract_execution"] = self.review_proposal(
-                self.cdp.wallet, state["proposal"]["id"], True
+                self.wallet, state["proposal"]["id"], True
             )
         else:
             state["contract_execution"] = self.review_proposal(
-                self.cdp.wallet, state["proposal"]["id"], False
+                self.wallet, state["proposal"]["id"], False
             )
         return state
 
@@ -289,14 +292,16 @@ class ContractAgent(BaseAgent):
             print(
                 f"Reviewing proposal {proposal_id} with decision {approve} on network {wallet.network_id}"
             )
-            print(f"agent wallet {self.cdp.wallet.default_address.address_id}")
+            print(f"agent wallet {wallet.default_address.address_id}")
+            faucet_tx = wallet.faucet().wait()
+            print(f"faucet tx {faucet_tx}")
             review_invocation = wallet.invoke_contract(
                 contract_address=self.contract_address,
                 method="reviewProposal",
                 args=review_args,
             ).wait()
         except Exception as e:
-            return f"Error executing review_proposal: {e!s}"
+            return f"Error executing review_proposal: {e}"
 
         return f"""Reviewed proposal {proposal_id} with decision {approve} on network {wallet.network_id}.
             Transaction hash: {review_invocation.transaction.transaction_hash}
@@ -412,7 +417,7 @@ if __name__ == "__main__":
     )
 
     test_proposal = Proposal(
-        id=10086,
+        id=3,
         title="Pilot Implementation of Secure LLM Analytics Dashboard with Training Program",
         description="Develop a secure, maintainable MVP dashboard for LLM usage analytics with comprehensive training and support infrastructure.",
         amount=52000.00,
