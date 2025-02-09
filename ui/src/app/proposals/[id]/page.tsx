@@ -1,7 +1,7 @@
 "use client"
 
 import { use } from "react"
-import { ProposalDetail } from "@/components/proposals/proposal-detail"
+import ProposalDetail from "@/components/proposals/proposal-detail"
 import { useDAOStore } from "@/lib/store/dao"
 
 interface PageProps {

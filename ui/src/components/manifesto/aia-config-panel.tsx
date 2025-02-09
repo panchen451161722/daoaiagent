@@ -236,7 +236,7 @@ export default function AIAConfigPanel({
                     permissions: [],
                     weight: 1,
                     type: aia.type as "Internal" | "Public",
-                    prompts: aia.prompts || []
+                    prompts: (aia.prompts || []).map(p => typeof p === 'string' ? p : p.content)
                   })}
                   disabled={isSelected}
                 >

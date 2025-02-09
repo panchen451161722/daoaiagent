@@ -4,12 +4,13 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { StatusTooltip } from "@/components/ui/status-tooltip"
+import { Proposal, ProposalHistory } from "@/lib/store/dao"
 
 interface ProposalDetailProps {
-  proposal: any // TODO: Add proper type
+  proposal: Proposal
 }
 
-export function ProposalDetail({ proposal }: ProposalDetailProps) {
+export default function ProposalDetail({ proposal }: ProposalDetailProps) {
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -131,7 +132,7 @@ export function ProposalDetail({ proposal }: ProposalDetailProps) {
         <TabsContent value="history">
           {proposal.history && proposal.history.length > 0 ? (
             <div className="space-y-4">
-              {proposal.history.map((item) => (
+              {proposal.history.map((item: ProposalHistory) => (
                 <div key={item.id} className="flex gap-4">
                   <div className="w-1/4">
                     <div className="text-sm text-muted-foreground">{item.date}</div>

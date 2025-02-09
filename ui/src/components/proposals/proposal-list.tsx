@@ -1,12 +1,14 @@
 "use client"
 
+import { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { DAOSelectDialog } from "./dao-select-dialog"
 import { useDAOStore } from "@/lib/store/dao"
 
 export default function ProposalList() {
-  const { proposals, daos, selectedDAO, setSelectedDAO } = useDAOStore()
+  const { proposals, daos } = useDAOStore()
+  const [selectedDAO, setSelectedDAO] = useState<number | null>(null)
   const filteredProposals = selectedDAO 
     ? proposals.filter(p => p.daoId === selectedDAO)
     : proposals
@@ -51,8 +53,8 @@ export default function ProposalList() {
                 </div>
                 <div className="flex items-center gap-4">
                   <div className="text-sm text-muted-foreground">
-                    <div>{proposal.fundingAmount}</div>
-                    <div>Release: {proposal.releasePercentage}</div>
+                    <div>{proposal.funding?.amount}</div>
+                    <div>Release: {proposal.funding?.releasePercentage}</div>
                   </div>
                   <span
                     className="px-3 py-1 rounded-full text-sm bg-primary/10 text-primary"

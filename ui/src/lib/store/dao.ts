@@ -49,10 +49,12 @@ export interface ProposalHistory {
   title: string
   description: string
   meetingId?: string
+  participants?: string[]
 }
 
 interface Creator {
   name: string
+  address?: string
   avatar?: string
 }
 
@@ -125,8 +127,6 @@ interface DAOStore {
   daos: DAO[]
   proposals: Proposal[]
   meetings: Meeting[]
-  selectedDAO: number | null
-  setSelectedDAO: (id: number | null) => void
   addDAO: (dao: DAO) => void
   addProposal: (proposal: Proposal) => void
   addMeeting: (meeting: Meeting) => void
@@ -267,13 +267,6 @@ const initialProposals: Proposal[] = [
     details: "We aim to place the distinctive Talisman user experience into the hands of our current and future users – to transform their web3 journey with a seamless mobile app experience. The Talisman mobile wallet will be a new product that will work seamlessly with the existing Talisman browser extension wallet and Portal web application. This is a proactive proposal that seeks US$598,100 in USDT for development of the mobile app (from Mar 2025 to Sep 2025).",
     fundingPlan: "The requested funding will be allocated as follows:\n- Development Team (60%): $358,860\n  - Mobile App Development\n  - UI/UX Design\n  - Testing and QA\n- Security Audits (20%): $119,620\n  - External Security Review\n  - Penetration Testing\n- Marketing & User Acquisition (15%): $89,715\n  - Launch Campaign\n  - Community Engagement\n- Contingency (5%): $29,905",
     expectedOutcome: "Key deliverables and milestones:\n1. iOS and Android mobile wallet apps with core functionality\n2. Seamless integration with existing Talisman extension\n3. Enhanced security features and user experience\n4. Increased user adoption and engagement\n5. Successful security audits and app store approvals",
-    votes: {
-      for: 15000,
-      against: 5000,
-      abstain: 2000
-    },
-    quorum: 20000,
-    endTime: "2025-02-16",
     history: [
       {
         id: 1,
@@ -311,9 +304,12 @@ const initialProposals: Proposal[] = [
       name: "DAO Treasury Team",
       address: "0x9876...4321"
     },
-    fundingAmount: "1,000,000 USDC",
-    releasePercentage: "25%",
-    description: "Quarterly allocation of funds for community development and growth initiatives",
+    funding: {
+      amount: 1000000,
+      currency: "USDC",
+      releasePercentage: 25
+    },
+    summary: "Quarterly allocation of funds for community development and growth initiatives",
   },
   {
     id: 1388,
@@ -326,9 +322,12 @@ const initialProposals: Proposal[] = [
       name: "Research Working Group",
       address: "0xabcd...efgh"
     },
-    fundingAmount: "250,000 USDC",
-    releasePercentage: "100%",
-    description: "Research project focused on improving Layer 2 scalability solutions",
+    funding: {
+      amount: 250000,
+      currency: "USDC",
+      releasePercentage: 100
+    },
+    summary: "Research project focused on improving Layer 2 scalability solutions",
   }
 ]
 
@@ -428,8 +427,6 @@ export const useDAOStore = create<DAOStore>()(
       daos: initialDAOs,
       proposals: initialProposals,
       meetings: initialMeetings,
-      selectedDAO: null,
-      setSelectedDAO: (id) => set({ selectedDAO: id }),
       addDAO: (dao) => set((state) => ({ daos: [...state.daos, dao] })),
       addProposal: (proposal) => set((state) => ({ proposals: [...state.proposals, proposal] })),
       addMeeting: (meeting) => set((state) => ({ meetings: [...state.meetings, meeting] })),
