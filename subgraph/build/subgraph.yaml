@@ -1,0 +1,26 @@
+specVersion: 1.0.0
+indexerHints:
+  prune: auto
+schema:
+  file: schema.graphql
+dataSources:
+  - kind: ethereum
+    name: DAOFactory
+    network: base-sepolia
+    source:
+      address: "0x27Fde4b919Abebd6cf2c550b5DA442d89ed203F5"
+      abi: DAOFactory
+      startBlock: 21669999
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - DAOCreated
+      abis:
+        - name: DAOFactory
+          file: DAOFactory/DAOFactory.json
+      eventHandlers:
+        - event: DAOCreated(indexed address,address,uint256,bytes32)
+          handler: handleDAOCreated
+      file: DAOFactory/DAOFactory.wasm
