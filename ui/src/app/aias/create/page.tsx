@@ -28,7 +28,7 @@ import { useAIAStore, predefinedPrompts, supportedReplacements } from "@/lib/sto
 export default function CreateAIAPage() {
   const { abilities } = useAIAStore()
   const [prompts, setPrompts] = useState([predefinedPrompts["Core Role"]])
-  const [type, setType] = useState("Internal")
+  const [type, setType] = useState("Individual")
 
   const addPrompt = (promptKey: keyof typeof predefinedPrompts) => {
     setPrompts([...prompts, predefinedPrompts[promptKey]])
