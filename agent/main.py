@@ -242,6 +242,10 @@ class ContractAgent(BaseAgent):
             description="An agent that can interact with the smart contract to submit the final proposal decision",
         )
         self.contract_address = os.getenv("CONTRACT_ADDRESS")
+        # Load contract ABI
+        with open("abi.json", "r") as f:
+            self.contract_abi = json.load(f)
+
         # Initialize CDP wrapper
         self.cdp = CdpAgentkitWrapper()
 
@@ -284,7 +288,7 @@ class ContractAgent(BaseAgent):
         Returns:
             str: Transaction result message with details
         """
-        review_args = {"_proposalId": proposal_id, "_approve": approve}
+        # function reviewProposal(uint256 _proposalId, bool _approve) external onlyActiveAIA {
 
         try:
             print(
@@ -292,14 +296,13 @@ class ContractAgent(BaseAgent):
             )
             print(f"agent wallet {wallet.default_address.address_id}")
             faucet_tx = wallet.faucet().wait()
-            print(f"faucet tx {faucet_tx}")
             review_invocation = wallet.invoke_contract(
                 contract_address=self.contract_address,
                 method="reviewProposal",
-                args=review_args,
+                abi=self.contract_abi,
+                args={"_proposalId": str(proposal_id), "_approve": approve},
             ).wait()
         except Exception as e:
-            raise e
             return f"Error executing review_proposal: {e}"
 
         return f"""Reviewed proposal {proposal_id} with decision {approve} on network {wallet.network_id}.
