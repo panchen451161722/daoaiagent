@@ -32,6 +32,22 @@ class FinalDecision(BaseModel):
 
 
 @dataclass
+class DAOInfo:
+    name: str
+    description: str
+    objective: str
+    values: str
+
+    def to_dict(self) -> dict:
+        return {
+            "name": self.name,
+            "description": self.description,
+            "objective": self.objective,
+            "values": self.values,
+        }
+
+
+@dataclass
 class Proposal:
     title: str
     description: str
@@ -50,6 +66,7 @@ class Proposal:
 # State Management
 class AgentState(TypedDict):
     proposal: Dict[str, Any]
+    dao_info: Dict[str, str]
     current_round: int
     discussion_history: List[str]
     votes: Dict[str, str]
@@ -97,11 +114,20 @@ class BaseAgent:
 
 Current discussion round: {round_num}/{max_rounds}
 
+DAO Information:
+Name: {dao_info.name}
+Description: {dao_info.description}
+Objective: {dao_info.objective}
+Values: {dao_info.values}
+
+As an agent of this DAO, you must ensure all decisions align with the DAO's objective and values.
+
 Guidelines:
 1. Keep your analysis brief and focused - maximum 2-3 sentences
 2. Only mention NEW concerns or points not raised in previous discussions
 3. If you have nothing new to add, respond with: PASS
-4. Focus only on your role's perspective""",
+4. Focus only on your role's perspective
+5. Ensure recommendations align with DAO values and objectives""",
                 ),
                 (
                     "human",
@@ -123,6 +149,7 @@ Provide your brief analysis or respond with PASS if no new concerns.""",
         messages = prompt.format_messages(
             proposal=json.dumps(state["proposal"], indent=2),
             discussion_history="\n".join(state["discussion_history"]),
+            dao_info=state["dao_info"],
         )
         response = self.llm.invoke(messages)
 
@@ -406,9 +433,10 @@ class AIAgentCommitee:
             f.write(graph_image.data)
         print("Graph visualization saved!")
 
-    def review_proposal(self, proposal: Proposal) -> AgentState:
+    def review_proposal(self, proposal: Proposal, dao_info: DAOInfo) -> AgentState:
         initial_state = AgentState(
             proposal=proposal.to_dict(),
+            dao_info=dao_info.to_dict(),
             current_round=1,
             discussion_history=[],
             votes={},
@@ -437,6 +465,13 @@ if __name__ == "__main__":
         committee.save_graph_image()
     except Exception as e:
         print(f"Could not save graph image: {e}")
+
+    dao_info = DAOInfo(
+        name="Research DAO",
+        description="A decentralized organization focused on advancing blockchain technology through funded research initiatives",
+        objective="To advance the field of blockchain technology by funding and coordinating innovative research projects and academic collaborations",
+        values="1. Scientific Rigor\n2. Open Source Collaboration\n3. Academic Excellence\n4. Innovation Focus\n5. Research Reproducibility",
+    )
 
     test_proposal = Proposal(
         title="Pilot Implementation of Secure LLM Analytics Dashboard with Training Program",
@@ -502,7 +537,7 @@ if __name__ == "__main__":
         },
     )
 
-    final_state = committee.review_proposal(test_proposal)
+    final_state = committee.review_proposal(test_proposal, dao_info)
     # Export final state to JSON
     with open("final_state.json", "w") as f:
         json.dump(final_state, f, indent=4, default=str)
