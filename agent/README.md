@@ -1,8 +1,15 @@
 # DAO Agent
 
-## Overview
+Deployed on Autonome, Try it out!
+```bash
+curl -X POST https://autonome.alt.technology/daov1-lggwuj/invoke \
+  -H "Content-Type: application/json" \
+  -d '@input.json' | tee >(jq > output.json)
+```
 
-This is a simple agent that can be used to manage a DAO. It is built using the LangGraph library.
+## Overview
+**Multi-agent & Customizable Workflow** for DAO proposal review and voting.
+![dynamic agent workflow](./dynamic-agent.png)
 
 ## Installation
 
@@ -50,15 +57,9 @@ Test the health check endpoint:
 curl http://localhost:8000/health
 ```
 
-Submit a proposal in `proposal.json` for review:
+Submit a proposal in `input.json` for review:
 ```bash
 curl -X POST http://localhost:8000/invoke \
-  -H "Content-Type: application/json" \
-  -d '@input.json' | tee >(jq > output.json)
-```
-
-```bash
-curl -X POST https://autonome.alt.technology/daov1-lggwuj/invoke \
   -H "Content-Type: application/json" \
   -d '@input.json' | tee >(jq > output.json)
 ```
