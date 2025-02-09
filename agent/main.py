@@ -67,12 +67,8 @@ class Proposal:
 class AgentState(TypedDict):
     proposal: Dict[str, Any]
     dao_info: Dict[str, str]
-    current_round: int
     discussion_history: List[str]
     votes: Dict[str, str]
-    next_agent: str
-    validation_results: Dict[str, Dict[str, Any]]
-    max_rounds: int
     final_decision: Dict[str, str]
     vote_counts: Dict[str, int]
 
@@ -94,9 +90,10 @@ class PrecheckResult(BaseModel):
 # Agent Definitions
 class BaseAgent:
 
-    def __init__(self, role: str, description: str):
+    def __init__(self, role: str, description: str, prompts: List[str] = None):
         self.role = role
         self.description = description
+        self.prompts = prompts or []
         self.llm = ChatOpenAI(
             model=os.getenv("LLM_MODEL"),
             temperature=0,
@@ -104,15 +101,14 @@ class BaseAgent:
             api_key=os.getenv("LLM_API_KEY"),
         )
 
-    def get_prompt(self, round_num: int, max_rounds: int) -> ChatPromptTemplate:
-        return ChatPromptTemplate.from_messages(
-            [
-                (
-                    "system",
-                    f"""You are a {self.role} in the AI Agent Committee with the following responsibilities:
-{self.description}
+    def get_analysis_prompt(self) -> ChatPromptTemplate:
+        messages = [
+            (
+                "system",
+                f"""You are a {self.role} in the AI Agent Committee.
 
-Current discussion round: {round_num}/{max_rounds}
+Role Description:
+{self.description}
 
 DAO Information:
 Name: {dao_info.name}
@@ -128,10 +124,18 @@ Guidelines:
 3. If you have nothing new to add, respond with: PASS
 4. Focus only on your role's perspective
 5. Ensure recommendations align with DAO values and objectives""",
-                ),
-                (
-                    "human",
-                    """Review the proposal and previous discussions:
+            )
+        ]
+
+        # Add each custom prompt as an AI message
+        if self.prompts:
+            for prompt in self.prompts:
+                messages.append(("human", prompt))
+
+        messages.append(
+            (
+                "human",
+                """Review the proposal and previous discussions:
 
 Proposal:
 {proposal}
@@ -140,12 +144,13 @@ Previous discussions:
 {discussion_history}
 
 Provide your brief analysis or respond with PASS if no new concerns.""",
-                ),
-            ]
+            )
         )
 
+        return ChatPromptTemplate.from_messages(messages)
+
     def analyze(self, state: AgentState) -> AgentState:
-        prompt = self.get_prompt(state["current_round"], state["max_rounds"])
+        prompt = self.get_analysis_prompt()
         messages = prompt.format_messages(
             proposal=json.dumps(state["proposal"], indent=2),
             discussion_history="\n".join(state["discussion_history"]),
@@ -153,30 +158,19 @@ Provide your brief analysis or respond with PASS if no new concerns.""",
         )
         response = self.llm.invoke(messages)
 
-        # Check if response is PASS
-        if "PASS" in response.content:
-            # Skip adding to discussion history if PASS
-            pass
-        else:
-            state["discussion_history"].append(
-                f"Round {state['current_round']} - {self.role}: {response.content}"
-            )
-
-        # Determine next agent
-        agents = ["coordinator", "financial", "technical", "auditor"]
-        current_idx = agents.index(state["next_agent"])
-        next_idx = (current_idx + 1) % len(agents)
-        state["next_agent"] = agents[next_idx]
-
-        if state["next_agent"] == "coordinator":
-            state["current_round"] += 1
+        if "PASS" not in response.content:
+            state["discussion_history"].append(f"{self.role}: {response.content}")
 
         return state
 
     def vote(self, state: AgentState) -> AgentState:
         prompt = ChatPromptTemplate.from_messages(
             [
-                ("system", f"You are the {self.role} in the AI Agent Committee."),
+                (
+                    "system",
+                    f"""You are the {self.role} in the AI Agent Committee. Based on the DAO's objectives and values, 
+                and your role's perspective, you must vote on the proposal.""",
+                ),
                 (
                     "human",
                     """Based on all discussions and your role's perspective, cast your vote on the proposal.
@@ -203,138 +197,6 @@ Cast your vote as APPROVE, REJECT, or ABSTAIN with a brief explanation.""",
         return state
 
 
-class ProposalCoordinator(BaseAgent):
-    def __init__(self):
-        super().__init__(
-            role="Proposal Coordinator",
-            description="Responsible for proposal routing, prioritization, and ensuring proper format and completeness.",
-        )
-
-
-class ChiefAuditor(BaseAgent):
-    def __init__(self):
-        super().__init__(
-            role="Chief Auditor",
-            description="Final veto authority, responsible for overall compliance and risk assessment.",
-        )
-
-    def make_final_decision(self, state: AgentState) -> AgentState:
-        prompt = ChatPromptTemplate.from_messages(
-            [
-                (
-                    "system",
-                    """You are the Chief Auditor with veto power. You can only REJECT a proposal 
-            if you find serious compliance or risk issues. You CANNOT approve a proposal directly - 
-            the proposal's approval depends on the majority vote from all committee members.""",
-                ),
-                (
-                    "human",
-                    """Review all discussions and determine if you need to exercise your veto power.
-                
-Full discussion history:
-{discussion_history}
-
-Votes from committee members:
-{votes}
-
-Vote counts:
-Approve: {approve_count}
-Reject: {reject_count}
-
-Proposal:
-{proposal}
-
-If you find any serious compliance or risk issues, exercise your veto power by responding with REJECT.
-Otherwise, respect the majority vote decision.
-""",
-                ),
-            ]
-        )
-
-        messages = prompt.format_messages(
-            discussion_history="\n".join(state["discussion_history"]),
-            votes=json.dumps(state["votes"], indent=2),
-            approve_count=state["vote_counts"]["approve"],
-            reject_count=state["vote_counts"]["reject"],
-            proposal=json.dumps(state["proposal"], indent=2),
-        )
-
-        auditor_decision = self.llm.with_structured_output(FinalDecision).invoke(
-            messages
-        )
-
-        # If auditor doesn't veto (REJECT), use majority vote decision
-        if auditor_decision.decision != "REJECT":
-            majority_decision = (
-                "APPROVE"
-                if state["vote_counts"]["approve"] > state["vote_counts"]["reject"]
-                else "REJECT"
-            )
-            justification = f"Based on majority vote (Approve: {state['vote_counts']['approve']}, Reject: {state['vote_counts']['reject']})"
-            state["final_decision"] = FinalDecision(
-                decision=majority_decision, justification=justification
-            ).model_dump()
-        else:
-            # If auditor vetoes, use their decision and justification
-            state["final_decision"] = auditor_decision.model_dump()
-
-        return state
-
-
-class FinancialController(BaseAgent):
-    def __init__(self):
-        super().__init__(
-            role="Financial Controller",
-            description="Responsible for budget enforcement and financial risk assessment.",
-        )
-
-
-class TechnicalAdvisor(BaseAgent):
-    def __init__(self):
-        super().__init__(
-            role="Technical Advisor",
-            description="Responsible for technical risk assessment and implementation feasibility.",
-        )
-
-
-class ProposalChecker(BaseAgent):
-    def __init__(self):
-        super().__init__(
-            role="Proposal Checker",
-            description="Responsible for initial proposal validation and quick risk assessment.",
-        )
-
-    def precheck(self, state: AgentState) -> AgentState:
-        prompt = ChatPromptTemplate.from_messages(
-            [
-                (
-                    "system",
-                    "You are the Proposal Checker. Do a quick validation of the proposal.",
-                ),
-                (
-                    "human",
-                    """Do a quick check of the following proposal:
-{proposal}
-
-Check for:
-1. Basic format and completeness
-2. Quick feasibility assessment
-3. Major red flags or risks
-
-Provide your assessment including status (PASS/FAIL), risk level (LOW/MEDIUM/HIGH), any major issues, whether to proceed with review, and a brief explanation.""",
-                ),
-            ]
-        )
-
-        messages = prompt.format_messages(
-            proposal=json.dumps(state["proposal"], indent=2)
-        )
-        result = self.llm.with_structured_output(PrecheckResult).invoke(messages)
-        state["validation_results"]["precheck"] = result.model_dump()
-        state["next_agent"] = "coordinator" if result.proceed_to_review else END
-        return state
-
-
 class VoteCounter:
     def count_votes(self, state: AgentState) -> AgentState:
         approve_count = sum(1 for vote in state["votes"].values() if vote == "APPROVE")
@@ -343,108 +205,77 @@ class VoteCounter:
         # Store vote counts in state
         state["vote_counts"] = {"approve": approve_count, "reject": reject_count}
 
+        # Make final decision based on majority vote
+        majority_decision = "APPROVE" if approve_count > reject_count else "REJECT"
+        justification = (
+            f"Based on majority vote (Approve: {approve_count}, Reject: {reject_count})"
+        )
+
+        state["final_decision"] = FinalDecision(
+            decision=majority_decision, justification=justification
+        ).model_dump()
+
         return state
 
 
-def create_aiac_graph():
-    # Initialize agents
-    checker = ProposalChecker()
-    coordinator = ProposalCoordinator()
-    auditor = ChiefAuditor()
-    financial = FinancialController()
-    technical = TechnicalAdvisor()
-    vote_counter = VoteCounter()
-
-    # Create workflow graph
+def create_dynamic_workflow(agents_config: List[Dict[str, Any]]) -> StateGraph:
     workflow = StateGraph(AgentState)
 
-    # 1. Precheck
-    workflow.add_node("precheck", checker.precheck)
-    # 2. analysis nodes
-    workflow.add_node("coordinator", coordinator.analyze)
-    workflow.add_node("financial", financial.analyze)
-    workflow.add_node("technical", technical.analyze)
-    workflow.add_node("auditor", auditor.analyze)
-    # 3. voting nodes
-    workflow.add_node("coordinator_vote", coordinator.vote)
-    workflow.add_node("financial_vote", financial.vote)
-    workflow.add_node("technical_vote", technical.vote)
-    workflow.add_node("auditor_vote", auditor.vote)
-    # 4. final decision
-    workflow.add_node("decision", auditor.make_final_decision)
-    # 5. vote counting
+    # Create agent instances
+    agents = {}
+    for config in agents_config:
+        agent = BaseAgent(
+            role=config["role"],
+            description=f"Agent for {config['role']}",
+            prompts=config.get("prompts", []),
+        )
+        agents[config["id"]] = agent
+
+        # Add node for analysis phase
+        workflow.add_node(config["id"], agent.analyze)
+        # Add node for voting phase
+        workflow.add_node(f"{config['id']}_vote", agent.vote)
+
+    # Set entry point to the first agent
+    if agents_config:
+        workflow.set_entry_point(agents_config[0]["id"])
+
+    # Connect analysis nodes based on the next relationships
+    for config in agents_config:
+        for next_id in config["nexts"]:
+            workflow.add_edge(config["id"], next_id)
+
+    # Connect voting nodes in sequence (voting remains sequential)
+    for i, config in enumerate(agents_config):
+        if i < len(agents_config) - 1:
+            workflow.add_edge(
+                f"{config['id']}_vote", f"{agents_config[i+1]['id']}_vote"
+            )
+        else:
+            workflow.add_edge(f"{config['id']}_vote", "count_votes")
+
+    # Add vote counting node and connect to END
+    vote_counter = VoteCounter()
     workflow.add_node("count_votes", vote_counter.count_votes)
-
-    # Set entry point
-    workflow.set_entry_point("precheck")
-
-    # If precheck passes → moves to coordinator
-    # If precheck fails → ends workflow
-    workflow.add_conditional_edges(
-        "precheck",
-        lambda x: (
-            "coordinator"
-            if x["validation_results"]
-            .get("precheck", {})
-            .get("proceed_to_review", False)
-            else END
-        ),
-        ["coordinator", END],
-    )
-
-    # Discussion phase
-    workflow.add_edge("coordinator", "financial")
-    workflow.add_edge("financial", "technical")
-    workflow.add_edge("technical", "auditor")
-
-    # Add conditional edge from auditor to either continue discussion or start voting
-    workflow.add_conditional_edges(
-        "auditor",
-        lambda x: (
-            "coordinator_vote"
-            if x["current_round"] > x["max_rounds"]
-            else "coordinator"
-        ),
-        ["coordinator_vote", "coordinator"],
-    )
-
-    # Connect voting nodes in sequence
-    workflow.add_edge("coordinator_vote", "financial_vote")
-    workflow.add_edge("financial_vote", "technical_vote")
-    workflow.add_edge("technical_vote", "auditor_vote")
-    workflow.add_edge("auditor_vote", "count_votes")
-    workflow.add_edge("count_votes", "decision")
-
-    # Final decision to end
-    workflow.add_edge("decision", END)
+    workflow.add_edge("count_votes", END)
 
     return workflow.compile()
 
 
 class AIAgentCommitee:
 
-    def __init__(self, max_rounds: int = 3):
-        self.max_rounds = max_rounds
-        self.graph = create_aiac_graph()
-
-    def save_graph_image(self):
-        graph_image = Image(self.graph.get_graph().draw_mermaid_png())
-        with open("workflow.png", "wb") as f:
-            f.write(graph_image.data)
-        print("Graph visualization saved!")
+    def __init__(self, agents_config: List[Dict[str, Any]]):
+        self.agents_config = agents_config
+        self.graph = create_dynamic_workflow(agents_config)
 
     def review_proposal(self, proposal: Proposal, dao_info: DAOInfo) -> AgentState:
         initial_state = AgentState(
             proposal=proposal.to_dict(),
             dao_info=dao_info.to_dict(),
-            current_round=1,
             discussion_history=[],
             votes={},
-            next_agent="coordinator",
-            validation_results={},
-            max_rounds=self.max_rounds,
             final_decision=FinalDecision(
-                decision="REJECT", justification="internal error"
+                decision="REJECT", justification="No votes cast"
             ).model_dump(),
             vote_counts={"approve": 0, "reject": 0},
         )
@@ -457,15 +288,39 @@ class AIAgentCommitee:
 
 
 if __name__ == "__main__":
-    # Only save graph image when running directly, not when imported
-    committee = AIAgentCommitee()
-
-    # Only try to save image if running in development
-    try:
-        committee.save_graph_image()
-    except Exception as e:
-        print(f"Could not save graph image: {e}")
-
+    # Example of using the dynamic configuration
+    agents_config = [
+        {
+            "id": "coordinator",
+            "role": "Proposal Coordinator",
+            "prompts": [
+                "Coordinate and manage proposal flow",
+                "Ensure proper documentation",
+            ],
+            "nexts": ["financial"],
+        },
+        {
+            "id": "financial",
+            "role": "Financial Controller",
+            "prompts": ["Review financial implications", "Assess budget impact"],
+            "nexts": ["auditor"],
+        },
+        {
+            "id": "technical",
+            "role": "Technical Advisor",
+            "prompts": [
+                "Evaluate technical feasibility",
+                "Assess implementation risks",
+            ],
+            "nexts": ["auditor"],
+        },
+        {
+            "id": "auditor",
+            "role": "Chief Auditor",
+            "prompts": ["Ensure compliance", "Final risk assessment"],
+            "nexts": ["technical"],
+        },
+    ]
     dao_info = DAOInfo(
         name="Research DAO",
         description="A decentralized organization focused on advancing blockchain technology through funded research initiatives",
@@ -537,6 +392,7 @@ if __name__ == "__main__":
         },
     )
 
+    committee = AIAgentCommitee(agents_config)
     final_state = committee.review_proposal(test_proposal, dao_info)
     # Export final state to JSON
     with open("final_state.json", "w") as f:
