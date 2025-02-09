@@ -56,6 +56,24 @@ export default function Home() {
               </p>
             </div>
           </div>
+
+          <div className="mt-16 w-full max-w-[800px]">
+            <h2 className="text-2xl font-bold mb-8">System Architecture</h2>
+            <div className="relative w-full aspect-[16/9]">
+              <Image
+                src="/arch.drawio.svg"
+                alt="System Architecture"
+                fill
+                className="object-contain"
+                priority
+              />
+            </div>
+            <div className="mt-8 text-left max-w-[800px] mx-auto">
+              <p className="text-lg text-muted-foreground">
+                Our system architecture is designed to seamlessly integrate AI agents with blockchain technology.
+              </p>
+            </div>
+          </div>
         </div>
       </main>
     </div>
