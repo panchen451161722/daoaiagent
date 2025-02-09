@@ -219,6 +219,8 @@ class VoteCounter:
 
 
 def create_dynamic_workflow(agents_config: List[Dict[str, Any]]) -> StateGraph:
+    if not agents_config:
+        raise ValueError("agents_config is empty")
     workflow = StateGraph(AgentState)
 
     # Create agent instances
@@ -237,15 +239,24 @@ def create_dynamic_workflow(agents_config: List[Dict[str, Any]]) -> StateGraph:
         workflow.add_node(f"{config['id']}_vote", agent.vote)
 
     # Set entry point to the first agent
-    if agents_config:
-        workflow.set_entry_point(agents_config[0]["id"])
+    workflow.set_entry_point(agents_config[0]["id"])
 
     # Connect analysis nodes based on the next relationships
     for config in agents_config:
         for next_id in config["nexts"]:
             workflow.add_edge(config["id"], next_id)
 
-    # Connect voting nodes in sequence (voting remains sequential)
+    # Connect last analysis node to first voting node
+    last_analysis_node = None
+    for config in agents_config:
+        if not config["nexts"]:  # This is the last analysis node
+            last_analysis_node = config["id"]
+
+    if last_analysis_node:
+        # Connect last analysis to first voting node
+        workflow.add_edge(last_analysis_node, f"{agents_config[0]['id']}_vote")
+
+    # Connect voting nodes in sequence
     for i, config in enumerate(agents_config):
         if i < len(agents_config) - 1:
             workflow.add_edge(
@@ -312,7 +323,7 @@ if __name__ == "__main__":
                 "Evaluate technical feasibility",
                 "Assess implementation risks",
             ],
-            "nexts": ["auditor"],
+            "nexts": [],
         },
         {
             "id": "auditor",
