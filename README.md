@@ -11,7 +11,10 @@ Revolutionizing DAO Governance with AI - Powered Proposal Management
 ## 🛠️ How It's Made
 ### Technology Stack
 
-- **[Python](https://www.python.org/)**: Core programming language for implementing the AI algorithms and data processing.
+- **[LangGraph/LangChain](https://www.langchain.com/langgraph)**: Framework for building our multi-agent & dynamic workflow systems.
+- **[Autonome](https://www.autono.meme/)**: Deploy and host agents on Autonome.
+- **[CDP AgentKit](https://docs.cdp.coinbase.com/)**: Agent toolkit for on-chain interaction. DAO Agents can update proposal status to the blockchain.
+- **[The Graph](https://thegraph.com/)**: Indexing protocol for querying blockchain data.
 - **[Solidity](https://soliditylang.org/)**: Smart contract programming language for interacting with the blockchain.
 - **[Next.js/React](https://nextjs.org/)/[React](https://reactjs.org/)**: UI development. Next.js is a React framework that provides server-side rendering, static site generation, and other features to build modern web applications. React is a JavaScript library for building user interfaces, which allows for the creation of reusable UI components.
 - **[shadcn](https://ui.shadcn.com/)**: UI framework. It offers a collection of reusable UI components that can be easily customized to fit the design requirements of the project.
