@@ -58,7 +58,7 @@ curl -X POST http://localhost:8000/invoke \
 ```
 
 ```bash
-curl -X POST https://autonome.alt.technology/dao-xfmvof \
+curl -X POST https://autonome.alt.technology/daov1-lggwuj/invoke \
   -H "Content-Type: application/json" \
   -d '@input.json' | tee >(jq > output.json)
 ```
