@@ -71,7 +71,7 @@ export function MainNav() {
       >
         <span className="relative inline-block">
           <span className="absolute -top-3 left-0 w-full text-xs font-normal text-muted-foreground text-center">/əˈlaɪv/</span>
-          A<span className="text-blue-600">i</span>lve
+          A<span className="text-primary">i</span>lve
         </span> DAO
       </Link>
       <NavigationMenu>

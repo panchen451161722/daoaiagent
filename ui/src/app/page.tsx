@@ -10,7 +10,7 @@ export default function Home() {
           <h1 className="text-4xl font-bold sm:text-6xl">
             <span className="relative inline-block">
               <span className="absolute -top-4 left-0 w-full text-sm font-normal text-muted-foreground text-center">/əˈlaɪv/</span>
-              A<span className="text-blue-600">i</span>lve
+              A<span className="text-primary">i</span>lve
             </span> DAO
           </h1>
           <h2 className="text-3xl font-bold sm:text-3xl">
