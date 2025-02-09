@@ -80,8 +80,6 @@ class AgentState(TypedDict):
     final_decision: Dict[str, str]
     vote_counts: Dict[str, int]
     contract_execution: str
-    messages: List[BaseMessage]  # Required by LangGraph
-    structured_response: Dict[str, Any]  # Required by LangGraph
 
 
 # Add these new models near the top with other data models
@@ -374,6 +372,7 @@ class AIAgentCommitee:
 
     def __init__(self, agents_config: List[Dict[str, Any]]):
         self.agents_config = agents_config
+        print(f"agent config {agents_config}")
         self.graph = create_dynamic_workflow(agents_config)
 
     def review_proposal(self, proposal: Proposal, dao_info: DAOInfo) -> AgentState:
@@ -391,6 +390,7 @@ class AIAgentCommitee:
 
         last_state = None
         for state in self.graph.stream(initial_state, stream_mode="values"):
+            print(state)
             last_state = state
 
         return last_state
