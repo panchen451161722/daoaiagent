@@ -22,6 +22,7 @@ Revolutionizing DAO Governance with AI - Powered Proposal Management
 
 ### Development Workflow
 
+![System Architecture](ui/public/committee.drawio.svg)
 1. **UI submit data directly to blockchain**
 2. **subgraph indexed the data from blockchain**
 3. **UI get data from subgraph**
