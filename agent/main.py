@@ -10,6 +10,7 @@ from cdp_langchain.tools import CdpTool
 from cdp_langchain.utils import CdpAgentkitWrapper
 from dotenv import load_dotenv
 from IPython.display import Image
+from langchain_core.messages import BaseMessage
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 from langgraph.graph import END, StateGraph
@@ -62,6 +63,7 @@ class Proposal:
 
     def to_dict(self) -> dict:
         return {
+            "id": self.id,
             "title": self.title,
             "description": self.description,
             "amount": self.amount,
@@ -77,7 +79,9 @@ class AgentState(TypedDict):
     votes: Dict[str, str]
     final_decision: Dict[str, str]
     vote_counts: Dict[str, int]
-    contract_execution: Dict[str, Any]
+    contract_execution: str
+    messages: List[BaseMessage]  # Required by LangGraph
+    structured_response: Dict[str, Any]  # Required by LangGraph
 
 
 # Add these new models near the top with other data models
@@ -256,11 +260,17 @@ class ContractAgent(BaseAgent):
         self.toolkit = CdpToolkit.from_cdp_agentkit_wrapper(self.cdp)
         # Get available tools and add review proposal tool
         self.tools = [review_proposal_tool]
-        # Create the agent
-        self.agent = create_react_agent(
-            model=self.llm,
-            tools=self.tools,
-        )
+
+    def execute_contract(self, state: AgentState) -> AgentState:
+        if state["final_decision"]["decision"] == "APPROVE":
+            state["contract_execution"] = self.review_proposal(
+                self.cdp.wallet, state["proposal"]["id"], True
+            )
+        else:
+            state["contract_execution"] = self.review_proposal(
+                self.cdp.wallet, state["proposal"]["id"], False
+            )
+        return state
 
     def review_proposal(self, wallet: Wallet, proposal_id: int, approve: bool) -> str:
         """Call reviewProposal function on the smart contract.
@@ -276,57 +286,21 @@ class ContractAgent(BaseAgent):
         review_args = {"_proposalId": proposal_id, "_approve": approve}
 
         try:
+            print(
+                f"Reviewing proposal {proposal_id} with decision {approve} on network {wallet.network_id}"
+            )
+            print(f"agent wallet {self.cdp.wallet.default_address.address_id}")
             review_invocation = wallet.invoke_contract(
                 contract_address=self.contract_address,
                 method="reviewProposal",
                 args=review_args,
             ).wait()
         except Exception as e:
-            return f"Error reviewing proposal: {e!s}"
+            return f"Error executing review_proposal: {e!s}"
 
-        return (
-            f"Reviewed proposal {proposal_id} with decision {approve} on network {wallet.network_id}.\n"
-            f"Transaction hash: {review_invocation.transaction.transaction_hash}\n"
-            f"Transaction link: {review_invocation.transaction.transaction_link}"
-        )
-
-    def execute_contract(self, state: AgentState) -> AgentState:
-        """Execute reviewProposal on the smart contract based on final decision"""
-        prompt = ChatPromptTemplate.from_messages(
-            [
-                (
-                    "system",
-                    """You are a contract agent responsible for submitting the final decision to the blockchain.
-                Use the available tools to call the reviewProposal function on the smart contract.
-                
-                The reviewProposal function takes two parameters:
-                - _proposalId: uint256 - The ID of the proposal
-                - _approve: bool - True for APPROVE, False for REJECT""",
-                ),
-                (
-                    "human",
-                    """Here is the final decision:
-                {final_decision}
-                
-                Call the reviewProposal function with the appropriate approval value based on the final decision.
-                proposal_id = {proposal_id}
-                """,
-                ),
-            ]
-        )
-
-        messages = prompt.format_messages(
-            final_decision=state["final_decision"],
-            proposal_id=state["proposal"]["id"],
-        )
-
-        # Use the ReAct agent to execute the contract interaction
-        response = self.agent.invoke(messages)
-
-        # Add the contract execution result to the state
-        state["contract_execution"] = response.return_values
-
-        return state
+        return f"""Reviewed proposal {proposal_id} with decision {approve} on network {wallet.network_id}.
+            Transaction hash: {review_invocation.transaction.transaction_hash}
+            Transaction link: {review_invocation.transaction.transaction_link}"""
 
 
 def create_dynamic_workflow(agents_config: List[Dict[str, Any]]) -> StateGraph:
@@ -421,21 +395,6 @@ if __name__ == "__main__":
     # Example of using the dynamic configuration
     agents_config = [
         {
-            "id": "coordinator",
-            "role": "Proposal Coordinator",
-            "prompts": [
-                "Coordinate and manage proposal flow",
-                "Ensure proper documentation",
-            ],
-            "nexts": ["financial"],
-        },
-        {
-            "id": "financial",
-            "role": "Financial Controller",
-            "prompts": ["Review financial implications", "Assess budget impact"],
-            "nexts": ["auditor"],
-        },
-        {
             "id": "technical",
             "role": "Technical Advisor",
             "prompts": [
@@ -443,13 +402,7 @@ if __name__ == "__main__":
                 "Assess implementation risks",
             ],
             "nexts": [],
-        },
-        {
-            "id": "auditor",
-            "role": "Chief Auditor",
-            "prompts": ["Ensure compliance", "Final risk assessment"],
-            "nexts": ["technical"],
-        },
+        }
     ]
     dao_info = DAOInfo(
         name="Research DAO",
