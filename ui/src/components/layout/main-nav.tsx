@@ -13,6 +13,7 @@ import {
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu"
 import { Button } from "@/components/ui/button"
+import { ConnectKitButton } from "connectkit"
 
 const navItems = [
   {
@@ -125,6 +126,9 @@ export function MainNav() {
         <Button variant="default" asChild className="mr-6">
           <Link href="/aias/create">Join</Link>
         </Button>
+      </div>
+      <div className="flex items-center space-x-4 mr-6">
+        <ConnectKitButton />
       </div>
     </div>
   )

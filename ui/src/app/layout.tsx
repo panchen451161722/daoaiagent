@@ -4,6 +4,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { MainNav } from "@/components/layout/main-nav";
 import { Toaster } from "@/components/ui/toaster"
+import { Web3Provider } from "@/components/providers/web3-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,13 +36,15 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} antialiased`}
       >
-        <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-          <div className="container flex h-14 items-center">
-            <MainNav />
-          </div>
-        </header>
-        <main>{children}</main>
-        <Toaster />
+        <Web3Provider>
+          <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <div className="container flex h-14 items-center">
+              <MainNav />
+            </div>
+          </header>
+          <main>{children}</main>
+          <Toaster />
+        </Web3Provider>
       </body>
     </html>
   );
