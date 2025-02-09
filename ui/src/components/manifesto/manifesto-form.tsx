@@ -24,7 +24,7 @@ export default function ManifestoForm() {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    logo: "🌟", // Default emoji
+    logo: "", 
     tokenContractAddress: "",
     objective: "",
     values: "",
@@ -43,8 +43,6 @@ export default function ManifestoForm() {
     }
     console.log("Form submitted:", manifestoData)
   }
-
-  const emojis = ["🌟", "🚀", "🌈", "🎯", "🔮", "⚡️", "🎨", "🌍", "💫", "🎭", "🦋", "🎪"]
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
@@ -68,22 +66,14 @@ export default function ManifestoForm() {
           <label htmlFor="logo" className="block text-sm font-medium mb-1">
             Logo (Emoji)
           </label>
-          <div className="grid grid-cols-6 gap-2">
-            {emojis.map((emoji) => (
-              <button
-                key={emoji}
-                type="button"
-                onClick={() => setFormData({ ...formData, logo: emoji })}
-                className={`p-2 text-2xl rounded hover:bg-accent ${
-                  formData.logo === emoji ? "bg-accent" : ""
-                }`}
-              >
-                {emoji}
-              </button>
-            ))}
-          </div>
+          <Input
+            id="logo"
+            value={formData.logo}
+            onChange={(e) => setFormData({ ...formData, logo: e.target.value })}
+            placeholder="Enter an emoji (e.g., 🌟)"
+            className="w-full"
+          />
         </div>
-
         <div>
           <label htmlFor="description" className="block text-sm font-medium mb-1">
             Description
